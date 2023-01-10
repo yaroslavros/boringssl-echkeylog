@@ -26,15 +26,15 @@ import json
 # OS_ARCH_COMBOS maps from OS and platform to the OpenSSL assembly "style" for
 # that platform and the extension used by asm files.
 OS_ARCH_COMBOS = [
-    ('ios', 'arm', 'ios32', [], 'S'),
-    ('ios', 'aarch64', 'ios64', [], 'S'),
+    ('apple', 'arm', 'ios32', [], 'S'),
+    ('apple', 'aarch64', 'ios64', [], 'S'),
+    ('apple', 'x86', 'macosx', ['-fPIC', '-DOPENSSL_IA32_SSE2'], 'S'),
+    ('apple', 'x86_64', 'macosx', [], 'S'),
     ('linux', 'arm', 'linux32', [], 'S'),
     ('linux', 'aarch64', 'linux64', [], 'S'),
     ('linux', 'ppc64le', 'linux64le', [], 'S'),
     ('linux', 'x86', 'elf', ['-fPIC', '-DOPENSSL_IA32_SSE2'], 'S'),
     ('linux', 'x86_64', 'elf', [], 'S'),
-    ('mac', 'x86', 'macosx', ['-fPIC', '-DOPENSSL_IA32_SSE2'], 'S'),
-    ('mac', 'x86_64', 'macosx', [], 'S'),
     ('win', 'x86', 'win32n', ['-DOPENSSL_IA32_SSE2'], 'asm'),
     ('win', 'x86_64', 'nasm', [], 'asm'),
     ('win', 'aarch64', 'win64', [], 'S'),
@@ -328,7 +328,7 @@ class GN(object):
   def __init__(self):
     self.firstSection = True
     self.header = \
-"""# Copyright (c) 2016 The Chromium Authors. All rights reserved.
+"""# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -387,7 +387,7 @@ class GYP(object):
 
   def __init__(self):
     self.header = \
-"""# Copyright (c) 2016 The Chromium Authors. All rights reserved.
+"""# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -437,11 +437,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CLANG)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fvisibility=hidden -fno-common -fno-exceptions -fno-rtti")
-  if(APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-  endif()
-
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fvisibility=hidden -fno-common -fno-exceptions -fno-rtti")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden -fno-common -std=c11")
 endif()
 
@@ -586,12 +582,8 @@ include_directories(src/include)
             asm_files)
 
       cmake.write(
-R'''if(APPLE AND ARCH STREQUAL "aarch64")
-  set(CRYPTO_ARCH_SOURCES ${CRYPTO_ios_aarch64_SOURCES})
-elseif(APPLE AND ARCH STREQUAL "arm")
-  set(CRYPTO_ARCH_SOURCES ${CRYPTO_ios_arm_SOURCES})
-elseif(APPLE)
-  set(CRYPTO_ARCH_SOURCES ${CRYPTO_mac_${ARCH}_SOURCES})
+R'''if(APPLE)
+  set(CRYPTO_ARCH_SOURCES ${CRYPTO_apple_${ARCH}_SOURCES})
 elseif(UNIX)
   set(CRYPTO_ARCH_SOURCES ${CRYPTO_linux_${ARCH}_SOURCES})
 elseif(WIN32)
@@ -969,8 +961,9 @@ ALL_PLATFORMS = {
 }
 
 if __name__ == '__main__':
-  parser = optparse.OptionParser(usage='Usage: %%prog [--prefix=<path>] [%s]' %
-                                 '|'.join(sorted(ALL_PLATFORMS.keys())))
+  parser = optparse.OptionParser(
+      usage='Usage: %%prog [--prefix=<path>] [all|%s]' %
+      '|'.join(sorted(ALL_PLATFORMS.keys())))
   parser.add_option('--prefix', dest='prefix',
       help='For Bazel, prepend argument to all source files')
   parser.add_option(
@@ -985,12 +978,15 @@ if __name__ == '__main__':
     parser.print_help()
     sys.exit(1)
 
-  platforms = []
-  for s in args:
-    platform = ALL_PLATFORMS.get(s)
-    if platform is None:
-      parser.print_help()
-      sys.exit(1)
-    platforms.append(platform())
+  if 'all' in args:
+    platforms = [platform() for platform in ALL_PLATFORMS.values()]
+  else:
+    platforms = []
+    for s in args:
+      platform = ALL_PLATFORMS.get(s)
+      if platform is None:
+        parser.print_help()
+        sys.exit(1)
+      platforms.append(platform())
 
   sys.exit(main(platforms))
