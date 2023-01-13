@@ -13,7 +13,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CLANG)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fvisibility=hidden -fno-common -fno-exceptions -fno-rtti")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fvisibility=hidden -fno-common -fno-exceptions -fno-rtti")
   if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
   endif()
@@ -126,44 +126,92 @@ endif()
 include_directories(src/include)
 
 set(
-  CRYPTO_ios_aarch64_SOURCES
+  CRYPTO_apple_aarch64_SOURCES
 
-  ios-aarch64/crypto/chacha/chacha-armv8.S
-  ios-aarch64/crypto/fipsmodule/aesv8-armx64.S
-  ios-aarch64/crypto/fipsmodule/armv8-mont.S
-  ios-aarch64/crypto/fipsmodule/ghash-neon-armv8.S
-  ios-aarch64/crypto/fipsmodule/ghashv8-armx64.S
-  ios-aarch64/crypto/fipsmodule/sha1-armv8.S
-  ios-aarch64/crypto/fipsmodule/sha256-armv8.S
-  ios-aarch64/crypto/fipsmodule/sha512-armv8.S
-  ios-aarch64/crypto/fipsmodule/vpaes-armv8.S
-  ios-aarch64/crypto/test/trampoline-armv8.S
+  apple-aarch64/crypto/chacha/chacha-armv8.S
+  apple-aarch64/crypto/cipher_extra/chacha20_poly1305_armv8.S
+  apple-aarch64/crypto/fipsmodule/aesv8-armx64.S
+  apple-aarch64/crypto/fipsmodule/armv8-mont.S
+  apple-aarch64/crypto/fipsmodule/ghash-neon-armv8.S
+  apple-aarch64/crypto/fipsmodule/ghashv8-armx64.S
+  apple-aarch64/crypto/fipsmodule/p256-armv8-asm.S
+  apple-aarch64/crypto/fipsmodule/p256_beeu-armv8-asm.S
+  apple-aarch64/crypto/fipsmodule/sha1-armv8.S
+  apple-aarch64/crypto/fipsmodule/sha256-armv8.S
+  apple-aarch64/crypto/fipsmodule/sha512-armv8.S
+  apple-aarch64/crypto/fipsmodule/vpaes-armv8.S
+  apple-aarch64/crypto/test/trampoline-armv8.S
 )
 
 set(
-  CRYPTO_ios_arm_SOURCES
+  CRYPTO_apple_arm_SOURCES
 
-  ios-arm/crypto/chacha/chacha-armv4.S
-  ios-arm/crypto/fipsmodule/aesv8-armx32.S
-  ios-arm/crypto/fipsmodule/armv4-mont.S
-  ios-arm/crypto/fipsmodule/bsaes-armv7.S
-  ios-arm/crypto/fipsmodule/ghash-armv4.S
-  ios-arm/crypto/fipsmodule/ghashv8-armx32.S
-  ios-arm/crypto/fipsmodule/sha1-armv4-large.S
-  ios-arm/crypto/fipsmodule/sha256-armv4.S
-  ios-arm/crypto/fipsmodule/sha512-armv4.S
-  ios-arm/crypto/fipsmodule/vpaes-armv7.S
-  ios-arm/crypto/test/trampoline-armv4.S
+  apple-arm/crypto/chacha/chacha-armv4.S
+  apple-arm/crypto/fipsmodule/aesv8-armx32.S
+  apple-arm/crypto/fipsmodule/armv4-mont.S
+  apple-arm/crypto/fipsmodule/bsaes-armv7.S
+  apple-arm/crypto/fipsmodule/ghash-armv4.S
+  apple-arm/crypto/fipsmodule/ghashv8-armx32.S
+  apple-arm/crypto/fipsmodule/sha1-armv4-large.S
+  apple-arm/crypto/fipsmodule/sha256-armv4.S
+  apple-arm/crypto/fipsmodule/sha512-armv4.S
+  apple-arm/crypto/fipsmodule/vpaes-armv7.S
+  apple-arm/crypto/test/trampoline-armv4.S
+)
+
+set(
+  CRYPTO_apple_x86_SOURCES
+
+  apple-x86/crypto/chacha/chacha-x86.S
+  apple-x86/crypto/fipsmodule/aesni-x86.S
+  apple-x86/crypto/fipsmodule/bn-586.S
+  apple-x86/crypto/fipsmodule/co-586.S
+  apple-x86/crypto/fipsmodule/ghash-ssse3-x86.S
+  apple-x86/crypto/fipsmodule/ghash-x86.S
+  apple-x86/crypto/fipsmodule/md5-586.S
+  apple-x86/crypto/fipsmodule/sha1-586.S
+  apple-x86/crypto/fipsmodule/sha256-586.S
+  apple-x86/crypto/fipsmodule/sha512-586.S
+  apple-x86/crypto/fipsmodule/vpaes-x86.S
+  apple-x86/crypto/fipsmodule/x86-mont.S
+  apple-x86/crypto/test/trampoline-x86.S
+)
+
+set(
+  CRYPTO_apple_x86_64_SOURCES
+
+  apple-x86_64/crypto/chacha/chacha-x86_64.S
+  apple-x86_64/crypto/cipher_extra/aes128gcmsiv-x86_64.S
+  apple-x86_64/crypto/cipher_extra/chacha20_poly1305_x86_64.S
+  apple-x86_64/crypto/fipsmodule/aesni-gcm-x86_64.S
+  apple-x86_64/crypto/fipsmodule/aesni-x86_64.S
+  apple-x86_64/crypto/fipsmodule/ghash-ssse3-x86_64.S
+  apple-x86_64/crypto/fipsmodule/ghash-x86_64.S
+  apple-x86_64/crypto/fipsmodule/md5-x86_64.S
+  apple-x86_64/crypto/fipsmodule/p256-x86_64-asm.S
+  apple-x86_64/crypto/fipsmodule/p256_beeu-x86_64-asm.S
+  apple-x86_64/crypto/fipsmodule/rdrand-x86_64.S
+  apple-x86_64/crypto/fipsmodule/rsaz-avx2.S
+  apple-x86_64/crypto/fipsmodule/sha1-x86_64.S
+  apple-x86_64/crypto/fipsmodule/sha256-x86_64.S
+  apple-x86_64/crypto/fipsmodule/sha512-x86_64.S
+  apple-x86_64/crypto/fipsmodule/vpaes-x86_64.S
+  apple-x86_64/crypto/fipsmodule/x86_64-mont.S
+  apple-x86_64/crypto/fipsmodule/x86_64-mont5.S
+  apple-x86_64/crypto/test/trampoline-x86_64.S
 )
 
 set(
   CRYPTO_linux_aarch64_SOURCES
 
   linux-aarch64/crypto/chacha/chacha-armv8.S
+  linux-aarch64/crypto/cipher_extra/chacha20_poly1305_armv8.S
   linux-aarch64/crypto/fipsmodule/aesv8-armx64.S
   linux-aarch64/crypto/fipsmodule/armv8-mont.S
   linux-aarch64/crypto/fipsmodule/ghash-neon-armv8.S
   linux-aarch64/crypto/fipsmodule/ghashv8-armx64.S
+  linux-aarch64/crypto/fipsmodule/p256-armv8-asm.S
+  linux-aarch64/crypto/fipsmodule/p256_beeu-armv8-asm.S
   linux-aarch64/crypto/fipsmodule/sha1-armv8.S
   linux-aarch64/crypto/fipsmodule/sha256-armv8.S
   linux-aarch64/crypto/fipsmodule/sha512-armv8.S
@@ -241,55 +289,16 @@ set(
 )
 
 set(
-  CRYPTO_mac_x86_SOURCES
-
-  mac-x86/crypto/chacha/chacha-x86.S
-  mac-x86/crypto/fipsmodule/aesni-x86.S
-  mac-x86/crypto/fipsmodule/bn-586.S
-  mac-x86/crypto/fipsmodule/co-586.S
-  mac-x86/crypto/fipsmodule/ghash-ssse3-x86.S
-  mac-x86/crypto/fipsmodule/ghash-x86.S
-  mac-x86/crypto/fipsmodule/md5-586.S
-  mac-x86/crypto/fipsmodule/sha1-586.S
-  mac-x86/crypto/fipsmodule/sha256-586.S
-  mac-x86/crypto/fipsmodule/sha512-586.S
-  mac-x86/crypto/fipsmodule/vpaes-x86.S
-  mac-x86/crypto/fipsmodule/x86-mont.S
-  mac-x86/crypto/test/trampoline-x86.S
-)
-
-set(
-  CRYPTO_mac_x86_64_SOURCES
-
-  mac-x86_64/crypto/chacha/chacha-x86_64.S
-  mac-x86_64/crypto/cipher_extra/aes128gcmsiv-x86_64.S
-  mac-x86_64/crypto/cipher_extra/chacha20_poly1305_x86_64.S
-  mac-x86_64/crypto/fipsmodule/aesni-gcm-x86_64.S
-  mac-x86_64/crypto/fipsmodule/aesni-x86_64.S
-  mac-x86_64/crypto/fipsmodule/ghash-ssse3-x86_64.S
-  mac-x86_64/crypto/fipsmodule/ghash-x86_64.S
-  mac-x86_64/crypto/fipsmodule/md5-x86_64.S
-  mac-x86_64/crypto/fipsmodule/p256-x86_64-asm.S
-  mac-x86_64/crypto/fipsmodule/p256_beeu-x86_64-asm.S
-  mac-x86_64/crypto/fipsmodule/rdrand-x86_64.S
-  mac-x86_64/crypto/fipsmodule/rsaz-avx2.S
-  mac-x86_64/crypto/fipsmodule/sha1-x86_64.S
-  mac-x86_64/crypto/fipsmodule/sha256-x86_64.S
-  mac-x86_64/crypto/fipsmodule/sha512-x86_64.S
-  mac-x86_64/crypto/fipsmodule/vpaes-x86_64.S
-  mac-x86_64/crypto/fipsmodule/x86_64-mont.S
-  mac-x86_64/crypto/fipsmodule/x86_64-mont5.S
-  mac-x86_64/crypto/test/trampoline-x86_64.S
-)
-
-set(
   CRYPTO_win_aarch64_SOURCES
 
   win-aarch64/crypto/chacha/chacha-armv8.S
+  win-aarch64/crypto/cipher_extra/chacha20_poly1305_armv8.S
   win-aarch64/crypto/fipsmodule/aesv8-armx64.S
   win-aarch64/crypto/fipsmodule/armv8-mont.S
   win-aarch64/crypto/fipsmodule/ghash-neon-armv8.S
   win-aarch64/crypto/fipsmodule/ghashv8-armx64.S
+  win-aarch64/crypto/fipsmodule/p256-armv8-asm.S
+  win-aarch64/crypto/fipsmodule/p256_beeu-armv8-asm.S
   win-aarch64/crypto/fipsmodule/sha1-armv8.S
   win-aarch64/crypto/fipsmodule/sha256-armv8.S
   win-aarch64/crypto/fipsmodule/sha512-armv8.S
@@ -339,12 +348,8 @@ set(
   win-x86_64/crypto/test/trampoline-x86_64.asm
 )
 
-if(APPLE AND ARCH STREQUAL "aarch64")
-  set(CRYPTO_ARCH_SOURCES ${CRYPTO_ios_aarch64_SOURCES})
-elseif(APPLE AND ARCH STREQUAL "arm")
-  set(CRYPTO_ARCH_SOURCES ${CRYPTO_ios_arm_SOURCES})
-elseif(APPLE)
-  set(CRYPTO_ARCH_SOURCES ${CRYPTO_mac_${ARCH}_SOURCES})
+if(APPLE)
+  set(CRYPTO_ARCH_SOURCES ${CRYPTO_apple_${ARCH}_SOURCES})
 elseif(UNIX)
   set(CRYPTO_ARCH_SOURCES ${CRYPTO_linux_${ARCH}_SOURCES})
 elseif(WIN32)
@@ -360,7 +365,6 @@ add_library(
   src/crypto/asn1/a_bool.c
   src/crypto/asn1/a_d2i_fp.c
   src/crypto/asn1/a_dup.c
-  src/crypto/asn1/a_enum.c
   src/crypto/asn1/a_gentm.c
   src/crypto/asn1/a_i2d_fp.c
   src/crypto/asn1/a_int.c
@@ -379,13 +383,13 @@ add_library(
   src/crypto/asn1/asn_pack.c
   src/crypto/asn1/f_int.c
   src/crypto/asn1/f_string.c
+  src/crypto/asn1/posix_time.c
   src/crypto/asn1/tasn_dec.c
   src/crypto/asn1/tasn_enc.c
   src/crypto/asn1/tasn_fre.c
   src/crypto/asn1/tasn_new.c
   src/crypto/asn1/tasn_typ.c
   src/crypto/asn1/tasn_utl.c
-  src/crypto/asn1/time_support.c
   src/crypto/base64/base64.c
   src/crypto/bio/bio.c
   src/crypto/bio/bio_mem.c
@@ -409,27 +413,28 @@ add_library(
   src/crypto/chacha/chacha.c
   src/crypto/cipher_extra/cipher_extra.c
   src/crypto/cipher_extra/derive_key.c
-  src/crypto/cipher_extra/e_aesccm.c
   src/crypto/cipher_extra/e_aesctrhmac.c
   src/crypto/cipher_extra/e_aesgcmsiv.c
   src/crypto/cipher_extra/e_chacha20poly1305.c
+  src/crypto/cipher_extra/e_des.c
   src/crypto/cipher_extra/e_null.c
   src/crypto/cipher_extra/e_rc2.c
   src/crypto/cipher_extra/e_rc4.c
   src/crypto/cipher_extra/e_tls.c
   src/crypto/cipher_extra/tls_cbc.c
-  src/crypto/cmac/cmac.c
   src/crypto/conf/conf.c
-  src/crypto/cpu-aarch64-fuchsia.c
-  src/crypto/cpu-aarch64-linux.c
-  src/crypto/cpu-aarch64-win.c
-  src/crypto/cpu-arm-linux.c
-  src/crypto/cpu-arm.c
-  src/crypto/cpu-intel.c
-  src/crypto/cpu-ppc64le.c
+  src/crypto/cpu_aarch64_apple.c
+  src/crypto/cpu_aarch64_fuchsia.c
+  src/crypto/cpu_aarch64_linux.c
+  src/crypto/cpu_aarch64_win.c
+  src/crypto/cpu_arm.c
+  src/crypto/cpu_arm_linux.c
+  src/crypto/cpu_intel.c
+  src/crypto/cpu_ppc64le.c
   src/crypto/crypto.c
   src/crypto/curve25519/curve25519.c
   src/crypto/curve25519/spake25519.c
+  src/crypto/des/des.c
   src/crypto/dh_extra/dh_asn1.c
   src/crypto/dh_extra/params.c
   src/crypto/digest_extra/digest_extra.c
@@ -442,7 +447,6 @@ add_library(
   src/crypto/ecdsa_extra/ecdsa_asn1.c
   src/crypto/engine/engine.c
   src/crypto/err/err.c
-  src/crypto/evp/digestsign.c
   src/crypto/evp/evp.c
   src/crypto/evp/evp_asn1.c
   src/crypto/evp/evp_ctx.c
@@ -451,6 +455,7 @@ add_library(
   src/crypto/evp/p_ec_asn1.c
   src/crypto/evp/p_ed25519.c
   src/crypto/evp/p_ed25519_asn1.c
+  src/crypto/evp/p_hkdf.c
   src/crypto/evp/p_rsa.c
   src/crypto/evp/p_rsa_asn1.c
   src/crypto/evp/p_x25519.c
@@ -556,7 +561,6 @@ add_library(
   src/crypto/x509/x_x509a.c
   src/crypto/x509v3/pcy_cache.c
   src/crypto/x509v3/pcy_data.c
-  src/crypto/x509v3/pcy_lib.c
   src/crypto/x509v3/pcy_map.c
   src/crypto/x509v3/pcy_node.c
   src/crypto/x509v3/pcy_tree.c
