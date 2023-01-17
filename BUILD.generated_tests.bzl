@@ -264,6 +264,7 @@ crypto_test_data = [
     "src/crypto/x509/test/policy_intermediate_invalid.pem",
     "src/crypto/x509/test/policy_intermediate_mapped.pem",
     "src/crypto/x509/test/policy_intermediate_mapped_any.pem",
+    "src/crypto/x509/test/policy_intermediate_mapped_oid3.pem",
     "src/crypto/x509/test/policy_intermediate_require.pem",
     "src/crypto/x509/test/policy_intermediate_require_duplicate.pem",
     "src/crypto/x509/test/policy_intermediate_require_no_policies.pem",
