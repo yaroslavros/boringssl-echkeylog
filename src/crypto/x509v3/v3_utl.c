@@ -300,19 +300,19 @@ int X509V3_add_value_int(const char *name, const ASN1_INTEGER *aint,
   return ret;
 }
 
-int X509V3_get_value_bool(const CONF_VALUE *value, int *asn1_bool) {
+int X509V3_get_value_bool(const CONF_VALUE *value, ASN1_BOOLEAN *asn1_bool) {
   char *btmp;
   if (!(btmp = value->value)) {
     goto err;
   }
   if (!strcmp(btmp, "TRUE") || !strcmp(btmp, "true") || !strcmp(btmp, "Y") ||
       !strcmp(btmp, "y") || !strcmp(btmp, "YES") || !strcmp(btmp, "yes")) {
-    *asn1_bool = 0xff;
+    *asn1_bool = ASN1_BOOLEAN_TRUE;
     return 1;
   } else if (!strcmp(btmp, "FALSE") || !strcmp(btmp, "false") ||
              !strcmp(btmp, "N") || !strcmp(btmp, "n") || !strcmp(btmp, "NO") ||
              !strcmp(btmp, "no")) {
-    *asn1_bool = 0;
+    *asn1_bool = ASN1_BOOLEAN_FALSE;
     return 1;
   }
 err:
@@ -432,14 +432,14 @@ static char *strip_spaces(char *name) {
   char *p, *q;
   // Skip over leading spaces
   p = name;
-  while (*p && isspace((unsigned char)*p)) {
+  while (*p && OPENSSL_isspace((unsigned char)*p)) {
     p++;
   }
   if (!*p) {
     return NULL;
   }
   q = p + strlen(p) - 1;
-  while ((q != p) && isspace((unsigned char)*q)) {
+  while ((q != p) && OPENSSL_isspace((unsigned char)*q)) {
     q--;
   }
   if (p != q) {
