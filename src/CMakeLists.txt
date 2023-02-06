@@ -364,6 +364,10 @@ if(CONSTANT_TIME_VALIDATION)
   add_definitions(-DNDEBUG)
 endif()
 
+if(MALLOC_FAILURE_TESTING)
+  add_definitions(-DBORINGSSL_MALLOC_FAILURE_TESTING)
+endif()
+
 function(go_executable dest package)
   set(godeps "${CMAKE_SOURCE_DIR}/util/godeps.go")
   if(NOT CMAKE_GENERATOR STREQUAL "Ninja")
@@ -416,8 +420,9 @@ if(FIPS_DELOCATE OR NOT OPENSSL_NO_ASM)
   else()
     enable_language(ASM)
     set(OPENSSL_ASM TRUE)
-    # CMake does not add -isysroot and -arch flags to assembly.
-    if(APPLE)
+    # Work around https://gitlab.kitware.com/cmake/cmake/-/issues/20771 in older
+    # CMake versions.
+    if(APPLE AND CMAKE_VERSION VERSION_LESS 3.19)
       if(CMAKE_OSX_SYSROOT)
         set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -isysroot \"${CMAKE_OSX_SYSROOT}\"")
       endif()
@@ -508,9 +513,11 @@ endif()
 # Add minimal googletest targets. The provided one has many side-effects, and
 # googletest has a very straightforward build.
 add_library(boringssl_gtest third_party/googletest/src/gtest-all.cc)
-target_include_directories(boringssl_gtest PRIVATE third_party/googletest)
-
-include_directories(third_party/googletest/include)
+target_include_directories(
+    boringssl_gtest
+    PUBLIC third_party/googletest/include
+    PRIVATE third_party/googletest
+)
 
 # Declare a dummy target to build all unit tests. Test targets should inject
 # themselves as dependencies next to the target definition.
