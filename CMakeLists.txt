@@ -89,6 +89,7 @@ set(
   apple-aarch64/crypto/fipsmodule/aesv8-armv8-apple.S
   apple-aarch64/crypto/fipsmodule/aesv8-gcm-armv8-apple.S
   apple-aarch64/crypto/fipsmodule/armv8-mont-apple.S
+  apple-aarch64/crypto/fipsmodule/bn-armv8-apple.S
   apple-aarch64/crypto/fipsmodule/ghash-neon-armv8-apple.S
   apple-aarch64/crypto/fipsmodule/ghashv8-armv8-apple.S
   apple-aarch64/crypto/fipsmodule/p256-armv8-asm-apple.S
@@ -146,6 +147,7 @@ set(
   linux-aarch64/crypto/fipsmodule/aesv8-armv8-linux.S
   linux-aarch64/crypto/fipsmodule/aesv8-gcm-armv8-linux.S
   linux-aarch64/crypto/fipsmodule/armv8-mont-linux.S
+  linux-aarch64/crypto/fipsmodule/bn-armv8-linux.S
   linux-aarch64/crypto/fipsmodule/ghash-neon-armv8-linux.S
   linux-aarch64/crypto/fipsmodule/ghashv8-armv8-linux.S
   linux-aarch64/crypto/fipsmodule/p256-armv8-asm-linux.S
@@ -205,6 +207,7 @@ set(
   win-aarch64/crypto/fipsmodule/aesv8-armv8-win.S
   win-aarch64/crypto/fipsmodule/aesv8-gcm-armv8-win.S
   win-aarch64/crypto/fipsmodule/armv8-mont-win.S
+  win-aarch64/crypto/fipsmodule/bn-armv8-win.S
   win-aarch64/crypto/fipsmodule/ghash-neon-armv8-win.S
   win-aarch64/crypto/fipsmodule/ghashv8-armv8-win.S
   win-aarch64/crypto/fipsmodule/p256-armv8-asm-win.S
