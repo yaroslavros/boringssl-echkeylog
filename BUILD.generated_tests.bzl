@@ -216,6 +216,7 @@ crypto_test_data = [
     "src/crypto/hmac_extra/hmac_tests.txt",
     "src/crypto/hpke/hpke_test_vectors.txt",
     "src/crypto/kyber/keccak_tests.txt",
+    "src/crypto/kyber/kyber_tests.txt",
     "src/crypto/pkcs8/test/empty_password.p12",
     "src/crypto/pkcs8/test/no_encryption.p12",
     "src/crypto/pkcs8/test/nss.p12",
