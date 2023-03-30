@@ -277,6 +277,7 @@ crypto_test_data = [
     "src/crypto/x509/test/policy_leaf_any.pem",
     "src/crypto/x509/test/policy_leaf_duplicate.pem",
     "src/crypto/x509/test/policy_leaf_invalid.pem",
+    "src/crypto/x509/test/policy_leaf_none.pem",
     "src/crypto/x509/test/policy_leaf_oid1.pem",
     "src/crypto/x509/test/policy_leaf_oid2.pem",
     "src/crypto/x509/test/policy_leaf_oid3.pem",
