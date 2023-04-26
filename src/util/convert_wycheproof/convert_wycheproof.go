@@ -12,8 +12,10 @@
 // OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 // CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-// convert_wycheproof.go converts Wycheproof test vectors into a format more
-// easily consumed by BoringSSL.
+//go:build ignore
+
+// convert_wycheproof converts Wycheproof test vectors into a format more easily
+// consumed by BoringSSL.
 package main
 
 import (
