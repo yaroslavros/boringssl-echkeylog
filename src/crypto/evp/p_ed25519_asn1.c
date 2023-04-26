@@ -36,7 +36,6 @@ static int ed25519_set_priv_raw(EVP_PKEY *pkey, const uint8_t *in, size_t len) {
 
   ED25519_KEY *key = OPENSSL_malloc(sizeof(ED25519_KEY));
   if (key == NULL) {
-    OPENSSL_PUT_ERROR(EVP, ERR_R_MALLOC_FAILURE);
     return 0;
   }
 
@@ -59,7 +58,6 @@ static int ed25519_set_pub_raw(EVP_PKEY *pkey, const uint8_t *in, size_t len) {
 
   ED25519_KEY *key = OPENSSL_malloc(sizeof(ED25519_KEY));
   if (key == NULL) {
-    OPENSSL_PUT_ERROR(EVP, ERR_R_MALLOC_FAILURE);
     return 0;
   }
 
@@ -214,11 +212,13 @@ const EVP_PKEY_ASN1_METHOD ed25519_asn1_meth = {
     ed25519_set_pub_raw,
     ed25519_get_priv_raw,
     ed25519_get_pub_raw,
-    NULL /* pkey_opaque */,
+    /*set1_tls_encodedpoint=*/NULL,
+    /*get1_tls_encodedpoint=*/NULL,
+    /*pkey_opaque=*/NULL,
     ed25519_size,
     ed25519_bits,
-    NULL /* param_missing */,
-    NULL /* param_copy */,
-    NULL /* param_cmp */,
+    /*param_missing=*/NULL,
+    /*param_copy=*/NULL,
+    /*param_cmp=*/NULL,
     ed25519_free,
 };
