@@ -553,8 +553,9 @@ BSSL_NAMESPACE_BEGIN
 
 // Bits for |algorithm_mac| (symmetric authentication).
 #define SSL_SHA1 0x00000001u
+#define SSL_SHA256 0x00000002u
 // SSL_AEAD is set for all AEADs.
-#define SSL_AEAD 0x00000002u
+#define SSL_AEAD 0x00000004u
 
 // Bits for |algorithm_prf| (handshake digest).
 #define SSL_HANDSHAKE_MAC_DEFAULT 0x1
@@ -660,17 +661,20 @@ size_t ssl_cipher_get_record_split_len(const SSL_CIPHER *cipher);
 
 // ssl_choose_tls13_cipher returns an |SSL_CIPHER| corresponding with the best
 // available from |cipher_suites| compatible with |version|, |group_id|, and
-// |only_fips|. It returns NULL if there isn't a compatible cipher. |has_aes_hw|
+// |policy|. It returns NULL if there isn't a compatible cipher. |has_aes_hw|
 // indicates if the choice should be made as if support for AES in hardware
 // is available.
 const SSL_CIPHER *ssl_choose_tls13_cipher(CBS cipher_suites, bool has_aes_hw,
                                           uint16_t version, uint16_t group_id,
-                                          bool only_fips);
+                                          enum ssl_compliance_policy_t policy);
 
 // ssl_tls13_cipher_meets_policy returns true if |cipher_id| is acceptable given
-// |only_fips|. (For now there's only a single policy and so the policy argument
-// is just a bool.)
-bool ssl_tls13_cipher_meets_policy(uint16_t cipher_id, bool only_fips);
+// |policy|.
+bool ssl_tls13_cipher_meets_policy(uint16_t cipher_id,
+                                   enum ssl_compliance_policy_t policy);
+
+// ssl_cipher_is_deprecated returns true if |cipher| is deprecated.
+OPENSSL_EXPORT bool ssl_cipher_is_deprecated(const SSL_CIPHER *cipher);
 
 
 // Transcript layer.
@@ -1107,7 +1111,7 @@ class SSLKeyShare {
 struct NamedGroup {
   int nid;
   uint16_t group_id;
-  const char name[12], alias[12];
+  const char name[32], alias[32];
 };
 
 // NamedGroups returns all supported groups.
@@ -3063,6 +3067,10 @@ struct SSL_CONFIG {
   // structure for the client to use when negotiating ECH.
   Array<uint8_t> client_ech_config_list;
 
+  // tls13_cipher_policy limits the set of ciphers that can be selected when
+  // negotiating a TLS 1.3 connection.
+  enum ssl_compliance_policy_t tls13_cipher_policy = ssl_compliance_policy_none;
+
   // verify_mode is a bitmask of |SSL_VERIFY_*| values.
   uint8_t verify_mode = SSL_VERIFY_NONE;
 
@@ -3111,10 +3119,6 @@ struct SSL_CONFIG {
 
   // permute_extensions is whether to permute extensions when sending messages.
   bool permute_extensions : 1;
-
-  // only_fips_cipher_suites_in_tls13 constrains the selection of cipher suites
-  // in TLS 1.3 such that only FIPS approved ones will be selected.
-  bool only_fips_cipher_suites_in_tls13 : 1;
 
   // aes_hw_override if set indicates we should override checking for aes
   // hardware support, and use the value in aes_hw_override_value instead.
@@ -3684,6 +3688,10 @@ struct ssl_ctx_st {
   int (*legacy_ocsp_callback)(SSL *ssl, void *arg) = nullptr;
   void *legacy_ocsp_callback_arg = nullptr;
 
+  // tls13_cipher_policy limits the set of ciphers that can be selected when
+  // negotiating a TLS 1.3 connection.
+  enum ssl_compliance_policy_t tls13_cipher_policy = ssl_compliance_policy_none;
+
   // verify_sigalgs, if not empty, is the set of signature algorithms
   // accepted from the peer in decreasing order of preference.
   bssl::Array<uint16_t> verify_sigalgs;
@@ -3730,10 +3738,6 @@ struct ssl_ctx_st {
 
   // If enable_early_data is true, early data can be sent and accepted.
   bool enable_early_data : 1;
-
-  // only_fips_cipher_suites_in_tls13 constrains the selection of cipher suites
-  // in TLS 1.3 such that only FIPS approved ones will be selected.
-  bool only_fips_cipher_suites_in_tls13 : 1;
 
   // aes_hw_override if set indicates we should override checking for AES
   // hardware support, and use the value in aes_hw_override_value instead.

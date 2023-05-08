@@ -390,6 +390,7 @@ std::vector<Flag> SortedFlags() {
       IntFlag("-early-write-after-message",
               &TestConfig::early_write_after_message),
       BoolFlag("-fips-202205", &TestConfig::fips_202205),
+      BoolFlag("-wpa-202304", &TestConfig::wpa_202304),
   };
   std::sort(flags.begin(), flags.end(), [](const Flag &a, const Flag &b) {
     return strcmp(a.name, b.name) < 0;
@@ -1390,7 +1391,7 @@ bssl::UniquePtr<SSL_CTX> TestConfig::SetupCtx(SSL_CTX *old_ctx) const {
 
   SSL_CTX_set0_buffer_pool(ssl_ctx.get(), g_pool);
 
-  std::string cipher_list = "ALL";
+  std::string cipher_list = "ALL:TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256";
   if (!cipher.empty()) {
     cipher_list = cipher;
     SSL_CTX_set_options(ssl_ctx.get(), SSL_OP_CIPHER_SERVER_PREFERENCE);
@@ -1765,8 +1766,17 @@ bssl::UniquePtr<SSL> TestConfig::NewSSL(
   if (enable_ech_grease) {
     SSL_set_enable_ech_grease(ssl.get(), 1);
   }
+  if (static_cast<int>(fips_202205) + static_cast<int>(wpa_202304) > 1) {
+    fprintf(stderr, "Multiple policy options given\n");
+    return nullptr;
+  }
   if (fips_202205 && !SSL_set_compliance_policy(
                          ssl.get(), ssl_compliance_policy_fips_202205)) {
+    fprintf(stderr, "SSL_set_compliance_policy failed\n");
+    return nullptr;
+  }
+  if (wpa_202304 && !SSL_set_compliance_policy(
+                         ssl.get(), ssl_compliance_policy_wpa3_192_202304)) {
     fprintf(stderr, "SSL_set_compliance_policy failed\n");
     return nullptr;
   }
@@ -1909,8 +1919,8 @@ bssl::UniquePtr<SSL> TestConfig::NewSSL(
           nids.push_back(NID_X25519);
           break;
 
-        case SSL_CURVE_X25519KYBER768:
-          nids.push_back(NID_X25519Kyber768);
+        case SSL_CURVE_X25519_KYBER768_DRAFT00:
+          nids.push_back(NID_X25519Kyber768Draft00);
           break;
       }
       if (!SSL_set1_curves(ssl.get(), &nids[0], nids.size())) {
