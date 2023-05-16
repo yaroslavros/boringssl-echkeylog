@@ -415,7 +415,7 @@ crypto_sources = [
     "src/crypto/rand_extra/windows.c",
     "src/crypto/rc4/rc4.c",
     "src/crypto/refcount_c11.c",
-    "src/crypto/refcount_lock.c",
+    "src/crypto/refcount_no_threads.c",
     "src/crypto/refcount_win.c",
     "src/crypto/rsa_extra/rsa_asn1.c",
     "src/crypto/rsa_extra/rsa_crypt.c",
