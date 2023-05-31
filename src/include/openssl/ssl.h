@@ -2349,55 +2349,37 @@ OPENSSL_EXPORT size_t SSL_CTX_get_num_tickets(const SSL_CTX *ctx);
 // TLS 1.3 and later, ECDSA curves are part of the signature algorithm. See
 // |SSL_SIGN_*|.
 
-// SSL_CTX_set1_groups sets the preferred groups for |ctx| to be |groups|. Each
-// element of |groups| should be a |NID_*| constant from nid.h. It returns one
-// on success and zero on failure.
-//
-// Note that this API does not use the |SSL_CURVE_*| values defined below.
-OPENSSL_EXPORT int SSL_CTX_set1_groups(SSL_CTX *ctx, const int *groups,
-                                       size_t num_groups);
+// SSL_GROUP_* define TLS group IDs.
+#define SSL_GROUP_SECP224R1 21
+#define SSL_GROUP_SECP256R1 23
+#define SSL_GROUP_SECP384R1 24
+#define SSL_GROUP_SECP521R1 25
+#define SSL_GROUP_X25519 29
+#define SSL_GROUP_X25519_KYBER768_DRAFT00 0x6399
 
-// SSL_set1_groups sets the preferred groups for |ssl| to be |groups|. Each
-// element of |groups| should be a |NID_*| constant from nid.h. It returns one
-// on success and zero on failure.
-//
-// Note that this API does not use the |SSL_CURVE_*| values defined below.
-OPENSSL_EXPORT int SSL_set1_groups(SSL *ssl, const int *groups,
-                                   size_t num_groups);
+// SSL_CTX_set1_group_ids sets the preferred groups for |ctx| to |group_ids|.
+// Each element of |group_ids| should be one of the |SSL_GROUP_*| constants. It
+// returns one on success and zero on failure.
+OPENSSL_EXPORT int SSL_CTX_set1_group_ids(SSL_CTX *ctx,
+                                          const uint16_t *group_ids,
+                                          size_t num_group_ids);
 
-// SSL_CTX_set1_groups_list sets the preferred groups for |ctx| to be the
-// colon-separated list |groups|. Each element of |groups| should be a curve
-// name (e.g. P-256, X25519, ...). It returns one on success and zero on
-// failure.
-OPENSSL_EXPORT int SSL_CTX_set1_groups_list(SSL_CTX *ctx, const char *groups);
+// SSL_set1_group_ids sets the preferred groups for |ssl| to |group_ids|. Each
+// element of |group_ids| should be one of the |SSL_GROUP_*| constants. It
+// returns one on success and zero on failure.
+OPENSSL_EXPORT int SSL_set1_group_ids(SSL *ssl, const uint16_t *group_ids,
+                                      size_t num_group_ids);
 
-// SSL_set1_groups_list sets the preferred groups for |ssl| to be the
-// colon-separated list |groups|. Each element of |groups| should be a curve
-// name (e.g. P-256, X25519, ...). It returns one on success and zero on
-// failure.
-OPENSSL_EXPORT int SSL_set1_groups_list(SSL *ssl, const char *groups);
+// SSL_get_group_id returns the ID of the group used by |ssl|'s most recently
+// completed handshake, or 0 if not applicable.
+OPENSSL_EXPORT uint16_t SSL_get_group_id(const SSL *ssl);
 
-// SSL_CURVE_* define TLS curve IDs.
-#define SSL_CURVE_SECP224R1 21
-#define SSL_CURVE_SECP256R1 23
-#define SSL_CURVE_SECP384R1 24
-#define SSL_CURVE_SECP521R1 25
-#define SSL_CURVE_X25519 29
-#define SSL_CURVE_X25519_KYBER768_DRAFT00 0x6399
+// SSL_get_group_name returns a human-readable name for the group specified by
+// the given TLS group ID, or NULL if the group is unknown.
+OPENSSL_EXPORT const char *SSL_get_group_name(uint16_t group_id);
 
-// SSL_get_curve_id returns the ID of the curve used by |ssl|'s most recently
-// completed handshake or 0 if not applicable.
-//
-// TODO(davidben): This API currently does not work correctly if there is a
-// renegotiation in progress. Fix this.
-OPENSSL_EXPORT uint16_t SSL_get_curve_id(const SSL *ssl);
-
-// SSL_get_curve_name returns a human-readable name for the curve specified by
-// the given TLS curve id, or NULL if the curve is unknown.
-OPENSSL_EXPORT const char *SSL_get_curve_name(uint16_t curve_id);
-
-// SSL_get_all_curve_names outputs a list of possible strings
-// |SSL_get_curve_name| may return in this version of BoringSSL. It writes at
+// SSL_get_all_group_names outputs a list of possible strings
+// |SSL_get_group_name| may return in this version of BoringSSL. It writes at
 // most |max_out| entries to |out| and returns the total number it would have
 // written, if |max_out| had been large enough. |max_out| may be initially set
 // to zero to size the output.
@@ -2408,7 +2390,40 @@ OPENSSL_EXPORT const char *SSL_get_curve_name(uint16_t curve_id);
 // placeholder, experimental, or deprecated values that do not apply to every
 // caller. Future versions of BoringSSL may also return strings not in this
 // list, so this does not apply if, say, sending strings across services.
-OPENSSL_EXPORT size_t SSL_get_all_curve_names(const char **out, size_t max_out);
+OPENSSL_EXPORT size_t SSL_get_all_group_names(const char **out, size_t max_out);
+
+// The following APIs also configure Diffie-Hellman groups, but use |NID_*|
+// constants instead of |SSL_GROUP_*| constants. These are provided for OpenSSL
+// compatibility. Where NIDs are unstable constants specific to OpenSSL and
+// BoringSSL, group IDs are defined by the TLS protocol. Prefer the group ID
+// representation if storing persistently, or exporting to another process or
+// library.
+
+// SSL_CTX_set1_groups sets the preferred groups for |ctx| to be |groups|. Each
+// element of |groups| should be a |NID_*| constant from nid.h. It returns one
+// on success and zero on failure.
+OPENSSL_EXPORT int SSL_CTX_set1_groups(SSL_CTX *ctx, const int *groups,
+                                       size_t num_groups);
+
+// SSL_set1_groups sets the preferred groups for |ssl| to be |groups|. Each
+// element of |groups| should be a |NID_*| constant from nid.h. It returns one
+// on success and zero on failure.
+OPENSSL_EXPORT int SSL_set1_groups(SSL *ssl, const int *groups,
+                                   size_t num_groups);
+
+// SSL_CTX_set1_groups_list decodes |groups| as a colon-separated list of group
+// names (e.g. "X25519" or "P-256") and sets |ctx|'s preferred groups to the
+// result. It returns one on success and zero on failure.
+OPENSSL_EXPORT int SSL_CTX_set1_groups_list(SSL_CTX *ctx, const char *groups);
+
+// SSL_set1_groups_list decodes |groups| as a colon-separated list of group
+// names (e.g. "X25519" or "P-256") and sets |ssl|'s preferred groups to the
+// result. It returns one on success and zero on failure.
+OPENSSL_EXPORT int SSL_set1_groups_list(SSL *ssl, const char *groups);
+
+// SSL_get_negotiated_group returns the NID of the group used by |ssl|'s most
+// recently completed handshake, or |NID_undef| if not applicable.
+OPENSSL_EXPORT int SSL_get_negotiated_group(const SSL *ssl);
 
 
 // Certificate verification.
@@ -5243,6 +5258,15 @@ OPENSSL_EXPORT int SSL_CTX_set_tlsext_status_arg(SSL_CTX *ctx, void *arg);
 #define SSL_set1_curves SSL_set1_groups
 #define SSL_CTX_set1_curves_list SSL_CTX_set1_groups_list
 #define SSL_set1_curves_list SSL_set1_groups_list
+#define SSL_get_curve_id SSL_get_group_id
+#define SSL_get_curve_name SSL_get_group_name
+#define SSL_get_all_curve_names SSL_get_all_group_names
+#define SSL_CURVE_SECP224R1 SSL_GROUP_SECP224R1
+#define SSL_CURVE_SECP256R1 SSL_GROUP_SECP256R1
+#define SSL_CURVE_SECP384R1 SSL_GROUP_SECP384R1
+#define SSL_CURVE_SECP521R1 SSL_GROUP_SECP521R1
+#define SSL_CURVE_X25519 SSL_GROUP_X25519
+#define SSL_CURVE_X25519_KYBER768_DRAFT00 SSL_GROUP_X25519_KYBER768_DRAFT00
 
 
 // Compliance policy configurations
@@ -5344,6 +5368,7 @@ OPENSSL_EXPORT int SSL_set_compliance_policy(
 #define SSL_CTRL_GET_CLIENT_CERT_TYPES doesnt_exist
 #define SSL_CTRL_GET_EXTRA_CHAIN_CERTS doesnt_exist
 #define SSL_CTRL_GET_MAX_CERT_LIST doesnt_exist
+#define SSL_CTRL_GET_NEGOTIATED_GROUP doesnt_exist
 #define SSL_CTRL_GET_NUM_RENEGOTIATIONS doesnt_exist
 #define SSL_CTRL_GET_READ_AHEAD doesnt_exist
 #define SSL_CTRL_GET_RI_SUPPORT doesnt_exist
@@ -5434,6 +5459,7 @@ OPENSSL_EXPORT int SSL_set_compliance_policy(
 #define SSL_get0_chain_certs SSL_get0_chain_certs
 #define SSL_get_max_cert_list SSL_get_max_cert_list
 #define SSL_get_mode SSL_get_mode
+#define SSL_get_negotiated_group SSL_get_negotiated_group
 #define SSL_get_options SSL_get_options
 #define SSL_get_secure_renegotiation_support \
     SSL_get_secure_renegotiation_support
