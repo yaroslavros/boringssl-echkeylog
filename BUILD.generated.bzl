@@ -596,6 +596,7 @@ crypto_sources_apple_x86_64 = [
     "apple-x86_64/crypto/fipsmodule/x86_64-mont-apple.S",
     "apple-x86_64/crypto/fipsmodule/x86_64-mont5-apple.S",
     "apple-x86_64/crypto/test/trampoline-x86_64-apple.S",
+    "src/crypto/curve25519/asm/fiat_curve25519_adx.S",
 ]
 
 crypto_sources_linux_aarch64 = [
@@ -668,6 +669,7 @@ crypto_sources_linux_x86_64 = [
     "linux-x86_64/crypto/fipsmodule/x86_64-mont-linux.S",
     "linux-x86_64/crypto/fipsmodule/x86_64-mont5-linux.S",
     "linux-x86_64/crypto/test/trampoline-x86_64-linux.S",
+    "src/crypto/curve25519/asm/fiat_curve25519_adx.S",
     "src/crypto/hrss/asm/poly_rq_mul.S",
 ]
 

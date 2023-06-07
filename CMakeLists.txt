@@ -199,6 +199,8 @@ set(
   linux-x86_64/crypto/fipsmodule/x86_64-mont-linux.S
   linux-x86_64/crypto/fipsmodule/x86_64-mont5-linux.S
   linux-x86_64/crypto/test/trampoline-x86_64-linux.S
+  src/crypto/curve25519/asm/fiat_curve25519_adx.S
+  src/crypto/curve25519/asm/fiat_curve25519_adx.S
   src/crypto/curve25519/asm/x25519-asm-arm.S
   src/crypto/hrss/asm/poly_rq_mul.S
   src/crypto/poly1305/poly1305_arm_asm.S
