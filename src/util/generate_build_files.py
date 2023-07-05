@@ -598,10 +598,6 @@ def NoTestRunnerFiles(path, dent, is_dir):
   return not is_dir or dent != 'runner'
 
 
-def NotGTestSupport(path, dent, is_dir):
-  return 'gtest' not in dent and 'abi_test' not in dent
-
-
 def SSLHeaderFiles(path, dent, is_dir):
   return dent in ['ssl.h', 'tls1.h', 'ssl23.h', 'ssl3.h', 'dtls1.h', 'srtp.h']
 
@@ -763,7 +759,6 @@ def main(platforms):
                     FindCFiles(os.path.join('src', 'third_party', 'fiat'), NoTestsNorFIPSFragments))
   fips_fragments = FindCFiles(os.path.join('src', 'crypto', 'fipsmodule'), OnlyFIPSFragments)
   ssl_source_files = FindCFiles(os.path.join('src', 'ssl'), NoTests)
-  tool_c_files = FindCFiles(os.path.join('src', 'tool'), NoTests)
   tool_h_files = FindHeaderFiles(os.path.join('src', 'tool'), AllFiles)
 
   # BCM shared library C files
@@ -779,8 +774,6 @@ def main(platforms):
   crypto_c_files.append('err_data.c')
   crypto_c_files.sort()
 
-  test_support_c_files = FindCFiles(os.path.join('src', 'crypto', 'test'),
-                                    NotGTestSupport)
   test_support_h_files = (
       FindHeaderFiles(os.path.join('src', 'crypto', 'test'), AllFiles) +
       FindHeaderFiles(os.path.join('src', 'ssl', 'test'), NoTestRunnerFiles))
@@ -793,22 +786,10 @@ def main(platforms):
           ['go', 'run', 'util/embed_test_data.go'] + cmake['CRYPTO_TEST_DATA'],
           cwd='src',
           stdout=out)
-    crypto_test_files += ['crypto_test_data.cc']
+    crypto_test_files.append('crypto_test_data.cc')
 
   crypto_test_files += PrefixWithSrc(cmake['CRYPTO_TEST_SOURCES'])
-  crypto_test_files += [
-      'src/crypto/test/abi_test.cc',
-      'src/crypto/test/file_test_gtest.cc',
-      'src/crypto/test/gtest_main.cc',
-  ]
   crypto_test_files.sort()
-
-  ssl_test_files = PrefixWithSrc(cmake['SSL_TEST_SOURCES'])
-  ssl_test_files += [
-      'src/crypto/test/abi_test.cc',
-      'src/crypto/test/gtest_main.cc',
-  ]
-  ssl_test_files.sort()
 
   fuzz_c_files = FindCFiles(os.path.join('src', 'fuzz'), NoTests)
 
@@ -854,10 +835,10 @@ def main(platforms):
       'ssl': ssl_source_files,
       'ssl_headers': ssl_h_files,
       'ssl_internal_headers': ssl_internal_h_files,
-      'ssl_test': ssl_test_files,
-      'tool': tool_c_files,
+      'ssl_test': PrefixWithSrc(cmake['SSL_TEST_SOURCES']),
+      'tool': PrefixWithSrc(cmake['BSSL_SOURCES']),
       'tool_headers': tool_h_files,
-      'test_support': test_support_c_files,
+      'test_support': PrefixWithSrc(cmake['TEST_SUPPORT_SOURCES']),
       'test_support_headers': test_support_h_files,
       'urandom_test': PrefixWithSrc(cmake['URANDOM_TEST_SOURCES']),
   }
