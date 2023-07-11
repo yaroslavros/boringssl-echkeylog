@@ -24,6 +24,7 @@ test_support_sources = [
     "src/crypto/fipsmodule/dh/internal.h",
     "src/crypto/fipsmodule/digest/internal.h",
     "src/crypto/fipsmodule/digest/md32_common.h",
+    "src/crypto/fipsmodule/ec/builtin_curves.h",
     "src/crypto/fipsmodule/ec/internal.h",
     "src/crypto/fipsmodule/ec/p256-nistz-table.h",
     "src/crypto/fipsmodule/ec/p256-nistz.h",
