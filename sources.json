@@ -748,6 +748,7 @@
     "src/crypto/self_test.cc", 
     "src/crypto/siphash/siphash_test.cc", 
     "src/crypto/stack/stack_test.cc", 
+    "src/crypto/test/file_test_gtest.cc", 
     "src/crypto/test/gtest_main.cc", 
     "src/crypto/thread_test.cc", 
     "src/crypto/trust_token/trust_token_test.cc", 
@@ -1197,7 +1198,6 @@
   "test_support": [
     "src/crypto/test/abi_test.cc", 
     "src/crypto/test/file_test.cc", 
-    "src/crypto/test/file_test_gtest.cc", 
     "src/crypto/test/test_util.cc", 
     "src/crypto/test/wycheproof_util.cc"
   ], 
