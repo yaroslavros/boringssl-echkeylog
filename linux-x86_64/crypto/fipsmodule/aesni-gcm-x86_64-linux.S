@@ -383,17 +383,18 @@ aesni_gcm_decrypt:
 
 	vzeroupper
 
+	movq	16(%rbp),%r12
 	vmovdqu	(%r8),%xmm1
 	addq	$-128,%rsp
 	movl	12(%r8),%ebx
 	leaq	.Lbswap_mask(%rip),%r11
 	leaq	-128(%rcx),%r14
 	movq	$0xf80,%r15
-	vmovdqu	(%r9),%xmm8
+	vmovdqu	(%r12),%xmm8
 	andq	$-128,%rsp
 	vmovdqu	(%r11),%xmm0
 	leaq	128(%rcx),%rcx
-	leaq	32+32(%r9),%r9
+	leaq	32(%r9),%r9
 	movl	240-128(%rcx),%r10d
 	vpshufb	%xmm0,%xmm8,%xmm8
 
@@ -438,6 +439,7 @@ aesni_gcm_decrypt:
 
 	call	_aesni_ctr32_ghash_6x
 
+	movq	16(%rbp),%r12
 	vmovups	%xmm9,-96(%rsi)
 	vmovups	%xmm10,-80(%rsi)
 	vmovups	%xmm11,-64(%rsi)
@@ -446,7 +448,7 @@ aesni_gcm_decrypt:
 	vmovups	%xmm14,-16(%rsi)
 
 	vpshufb	(%r11),%xmm8,%xmm8
-	vmovdqu	%xmm8,-64(%r9)
+	vmovdqu	%xmm8,(%r12)
 
 	vzeroupper
 	leaq	-40(%rbp),%rsp
@@ -658,8 +660,9 @@ aesni_gcm_encrypt:
 
 	call	_aesni_ctr32_6x
 
-	vmovdqu	(%r9),%xmm8
-	leaq	32+32(%r9),%r9
+	movq	16(%rbp),%r12
+	leaq	32(%r9),%r9
+	vmovdqu	(%r12),%xmm8
 	subq	$12,%rdx
 	movq	$192,%rax
 	vpshufb	%xmm0,%xmm8,%xmm8
@@ -837,8 +840,9 @@ aesni_gcm_encrypt:
 	vpclmulqdq	$0x10,%xmm3,%xmm8,%xmm8
 	vpxor	%xmm7,%xmm2,%xmm2
 	vpxor	%xmm2,%xmm8,%xmm8
+	movq	16(%rbp),%r12
 	vpshufb	(%r11),%xmm8,%xmm8
-	vmovdqu	%xmm8,-64(%r9)
+	vmovdqu	%xmm8,(%r12)
 
 	vzeroupper
 	leaq	-40(%rbp),%rsp
@@ -866,6 +870,7 @@ aesni_gcm_encrypt:
 
 .cfi_endproc	
 .size	aesni_gcm_decrypt,.-aesni_gcm_decrypt
+.section	.rodata
 .align	64
 .Lbswap_mask:
 .byte	15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0
@@ -879,6 +884,7 @@ aesni_gcm_encrypt:
 .byte	1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 .byte	65,69,83,45,78,73,32,71,67,77,32,109,111,100,117,108,101,32,102,111,114,32,120,56,54,95,54,52,44,32,67,82,89,80,84,79,71,65,77,83,32,98,121,32,60,97,112,112,114,111,64,111,112,101,110,115,115,108,46,111,114,103,62,0
 .align	64
+.text	
 #endif
 #if defined(__ELF__)
 // See https://www.airs.com/blog/archives/518.

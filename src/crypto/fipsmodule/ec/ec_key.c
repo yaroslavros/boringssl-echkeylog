@@ -244,8 +244,9 @@ int EC_KEY_set_private_key(EC_KEY *key, const BIGNUM *priv_key) {
   if (scalar == NULL) {
     return 0;
   }
-  if (!ec_bignum_to_scalar(key->group, &scalar->scalar, priv_key)) {
-    OPENSSL_PUT_ERROR(EC, EC_R_WRONG_ORDER);
+  if (!ec_bignum_to_scalar(key->group, &scalar->scalar, priv_key) ||
+      ec_scalar_is_zero(key->group, &scalar->scalar)) {
+    OPENSSL_PUT_ERROR(EC, EC_R_INVALID_PRIVATE_KEY);
     ec_wrapped_scalar_free(scalar);
     return 0;
   }
@@ -310,7 +311,7 @@ int EC_KEY_check_key(const EC_KEY *eckey) {
   // NOTE: this is a FIPS pair-wise consistency check for the ECDH case. See SP
   // 800-56Ar3, page 36.
   if (eckey->priv_key != NULL) {
-    EC_RAW_POINT point;
+    EC_JACOBIAN point;
     if (!ec_point_mul_scalar_base(eckey->group, &point,
                                   &eckey->priv_key->scalar)) {
       OPENSSL_PUT_ERROR(EC, ERR_R_EC_LIB);
