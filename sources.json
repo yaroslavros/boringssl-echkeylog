@@ -1132,6 +1132,7 @@
     "src/fuzz/der_roundtrip.cc", 
     "src/fuzz/dtls_client.cc", 
     "src/fuzz/dtls_server.cc", 
+    "src/fuzz/parse_certificate_fuzzer.cc", 
     "src/fuzz/pkcs12.cc", 
     "src/fuzz/pkcs8.cc", 
     "src/fuzz/privkey.cc", 
