@@ -345,6 +345,7 @@ crypto_sources = [
     "src/crypto/cpu_aarch64_fuchsia.c",
     "src/crypto/cpu_aarch64_linux.c",
     "src/crypto/cpu_aarch64_openbsd.c",
+    "src/crypto/cpu_aarch64_sysreg.c",
     "src/crypto/cpu_aarch64_win.c",
     "src/crypto/cpu_arm.c",
     "src/crypto/cpu_arm_freebsd.c",
