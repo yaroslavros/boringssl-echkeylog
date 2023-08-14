@@ -619,6 +619,7 @@ pki_test_data = [
     "src/pki/testdata/name_constraints_unittest/ipaddress-invalid_mask_not_contiguous_2.pem",
     "src/pki/testdata/name_constraints_unittest/ipaddress-invalid_mask_not_contiguous_3.pem",
     "src/pki/testdata/name_constraints_unittest/ipaddress-invalid_mask_not_contiguous_4.pem",
+    "src/pki/testdata/name_constraints_unittest/ipaddress-mapped_addrs.pem",
     "src/pki/testdata/name_constraints_unittest/ipaddress-permit_all.pem",
     "src/pki/testdata/name_constraints_unittest/ipaddress-permit_prefix1.pem",
     "src/pki/testdata/name_constraints_unittest/ipaddress-permit_prefix31.pem",
