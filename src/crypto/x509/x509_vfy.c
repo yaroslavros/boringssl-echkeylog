@@ -126,8 +126,7 @@ static int check_policy(X509_STORE_CTX *ctx);
 
 static int get_crl_score(X509_STORE_CTX *ctx, X509 **pissuer,
                          unsigned int *preasons, X509_CRL *crl, X509 *x);
-static int get_crl_delta(X509_STORE_CTX *ctx, X509_CRL **pcrl, X509_CRL **pdcrl,
-                         X509 *x);
+static int get_crl(X509_STORE_CTX *ctx, X509_CRL **pcrl, X509 *x);
 static void crl_akid_check(X509_STORE_CTX *ctx, X509_CRL *crl, X509 **pissuer,
                            int *pcrl_score);
 static int crl_crldp_check(X509 *x, X509_CRL *crl, int crl_score,
@@ -826,7 +825,7 @@ static int check_revocation(X509_STORE_CTX *ctx) {
 }
 
 static int check_cert(X509_STORE_CTX *ctx) {
-  X509_CRL *crl = NULL, *dcrl = NULL;
+  X509_CRL *crl = NULL;
   X509 *x;
   int ok = 0, cnum;
   unsigned int last_reasons;
@@ -842,7 +841,7 @@ static int check_cert(X509_STORE_CTX *ctx) {
     if (ctx->get_crl) {
       ok = ctx->get_crl(ctx, &crl, x);
     } else {
-      ok = get_crl_delta(ctx, &crl, &dcrl, x);
+      ok = get_crl(ctx, &crl, x);
     }
     // If error looking up CRL, nothing we can do except notify callback
     if (!ok) {
@@ -856,31 +855,13 @@ static int check_cert(X509_STORE_CTX *ctx) {
       goto err;
     }
 
-    if (dcrl) {
-      ok = ctx->check_crl(ctx, dcrl);
-      if (!ok) {
-        goto err;
-      }
-      ok = ctx->cert_crl(ctx, dcrl, x);
-      if (!ok) {
-        goto err;
-      }
-    } else {
-      ok = 1;
-    }
-
-    // Don't look in full CRL if delta reason is removefromCRL
-    if (ok != 2) {
-      ok = ctx->cert_crl(ctx, crl, x);
-      if (!ok) {
-        goto err;
-      }
+    ok = ctx->cert_crl(ctx, crl, x);
+    if (!ok) {
+      goto err;
     }
 
     X509_CRL_free(crl);
-    X509_CRL_free(dcrl);
     crl = NULL;
-    dcrl = NULL;
     // If reasons not updated we wont get anywhere by another iteration,
     // so exit loop.
     if (last_reasons == ctx->current_reasons) {
@@ -889,10 +870,9 @@ static int check_cert(X509_STORE_CTX *ctx) {
       goto err;
     }
   }
+
 err:
   X509_CRL_free(crl);
-  X509_CRL_free(dcrl);
-
   ctx->current_crl = NULL;
   return ok;
 }
@@ -966,19 +946,18 @@ static int check_crl_time(X509_STORE_CTX *ctx, X509_CRL *crl, int notify) {
   return 1;
 }
 
-static int get_crl_sk(X509_STORE_CTX *ctx, X509_CRL **pcrl, X509_CRL **pdcrl,
-                      X509 **pissuer, int *pscore, unsigned int *preasons,
+static int get_crl_sk(X509_STORE_CTX *ctx, X509_CRL **pcrl, X509 **pissuer,
+                      int *pscore, unsigned *preasons,
                       STACK_OF(X509_CRL) *crls) {
   int crl_score, best_score = *pscore;
-  size_t i;
-  unsigned int reasons, best_reasons = 0;
+  unsigned best_reasons = 0;
   X509 *x = ctx->current_cert;
-  X509_CRL *crl, *best_crl = NULL;
+  X509_CRL *best_crl = NULL;
   X509 *crl_issuer = NULL, *best_crl_issuer = NULL;
 
-  for (i = 0; i < sk_X509_CRL_num(crls); i++) {
-    crl = sk_X509_CRL_value(crls, i);
-    reasons = *preasons;
+  for (size_t i = 0; i < sk_X509_CRL_num(crls); i++) {
+    X509_CRL *crl = sk_X509_CRL_value(crls, i);
+    unsigned reasons = *preasons;
     crl_score = get_crl_score(ctx, &crl_issuer, &reasons, crl, x);
     if (crl_score < best_score || crl_score == 0) {
       continue;
@@ -1011,11 +990,6 @@ static int get_crl_sk(X509_STORE_CTX *ctx, X509_CRL **pcrl, X509_CRL **pdcrl,
     *pscore = best_score;
     *preasons = best_reasons;
     X509_CRL_up_ref(best_crl);
-    // TODO(crbug.com/boringssl/601): Remove remnants of delta CRL support.
-    if (*pdcrl) {
-      X509_CRL_free(*pdcrl);
-      *pdcrl = NULL;
-    }
   }
 
   if (best_score >= CRL_SCORE_VALID) {
@@ -1044,12 +1018,6 @@ static int get_crl_score(X509_STORE_CTX *ctx, X509 **pissuer,
   }
   // Reason codes and indirect CRLs are not supported.
   if (crl->idp_flags & (IDP_INDIRECT | IDP_REASONS)) {
-    return 0;
-  }
-  if (crl->base_crl_number) {
-    // Don't process deltas at this stage
-    //
-    // TODO(crbug.com/boringssl/601): Clean up remnants of delta CRL support.
     return 0;
   }
   // If issuer name doesn't match certificate need indirect CRL
@@ -1289,7 +1257,7 @@ static int crl_crldp_check(X509 *x, X509_CRL *crl, int crl_score,
       return 0;
     }
   }
-  *preasons = crl->idp_reasons;
+  *preasons = CRLDP_ALL_REASONS;
   for (i = 0; i < sk_DIST_POINT_num(x->crldp); i++) {
     DIST_POINT *dp = sk_DIST_POINT_value(x->crldp, i);
     if (crldp_check_crlissuer(dp, crl, crl_score)) {
@@ -1306,27 +1274,23 @@ static int crl_crldp_check(X509 *x, X509_CRL *crl, int crl_score,
   return 0;
 }
 
-// Retrieve CRL corresponding to current certificate. If deltas enabled try
-// to find a delta CRL too
-
-static int get_crl_delta(X509_STORE_CTX *ctx, X509_CRL **pcrl, X509_CRL **pdcrl,
-                         X509 *x) {
+// Retrieve CRL corresponding to current certificate.
+static int get_crl(X509_STORE_CTX *ctx, X509_CRL **pcrl, X509 *x) {
   int ok;
   X509 *issuer = NULL;
   int crl_score = 0;
   unsigned int reasons;
-  X509_CRL *crl = NULL, *dcrl = NULL;
+  X509_CRL *crl = NULL;
   STACK_OF(X509_CRL) *skcrl;
   X509_NAME *nm = X509_get_issuer_name(x);
   reasons = ctx->current_reasons;
-  ok = get_crl_sk(ctx, &crl, &dcrl, &issuer, &crl_score, &reasons, ctx->crls);
+  ok = get_crl_sk(ctx, &crl, &issuer, &crl_score, &reasons, ctx->crls);
 
   if (ok) {
     goto done;
   }
 
   // Lookup CRLs from store
-
   skcrl = ctx->lookup_crls(ctx, nm);
 
   // If no CRLs found and a near match from get_crl_sk use that
@@ -1334,7 +1298,7 @@ static int get_crl_delta(X509_STORE_CTX *ctx, X509_CRL **pcrl, X509_CRL **pdcrl,
     goto done;
   }
 
-  get_crl_sk(ctx, &crl, &dcrl, &issuer, &crl_score, &reasons, skcrl);
+  get_crl_sk(ctx, &crl, &issuer, &crl_score, &reasons, skcrl);
 
   sk_X509_CRL_pop_free(skcrl, X509_CRL_free);
 
@@ -1346,7 +1310,6 @@ done:
     ctx->current_crl_score = crl_score;
     ctx->current_reasons = reasons;
     *pcrl = crl;
-    *pdcrl = dcrl;
     return 1;
   }
 
@@ -1382,42 +1345,39 @@ static int check_crl(X509_STORE_CTX *ctx, X509_CRL *crl) {
   }
 
   if (issuer) {
-    // Skip most tests for deltas because they have already been done
-    if (!crl->base_crl_number) {
-      // Check for cRLSign bit if keyUsage present
-      if ((issuer->ex_flags & EXFLAG_KUSAGE) &&
-          !(issuer->ex_kusage & KU_CRL_SIGN)) {
-        ctx->error = X509_V_ERR_KEYUSAGE_NO_CRL_SIGN;
+    // Check for cRLSign bit if keyUsage present
+    if ((issuer->ex_flags & EXFLAG_KUSAGE) &&
+        !(issuer->ex_kusage & KU_CRL_SIGN)) {
+      ctx->error = X509_V_ERR_KEYUSAGE_NO_CRL_SIGN;
+      ok = ctx->verify_cb(0, ctx);
+      if (!ok) {
+        goto err;
+      }
+    }
+
+    if (!(ctx->current_crl_score & CRL_SCORE_SCOPE)) {
+      ctx->error = X509_V_ERR_DIFFERENT_CRL_SCOPE;
+      ok = ctx->verify_cb(0, ctx);
+      if (!ok) {
+        goto err;
+      }
+    }
+
+    if (!(ctx->current_crl_score & CRL_SCORE_SAME_PATH)) {
+      if (check_crl_path(ctx, ctx->current_issuer) <= 0) {
+        ctx->error = X509_V_ERR_CRL_PATH_VALIDATION_ERROR;
         ok = ctx->verify_cb(0, ctx);
         if (!ok) {
           goto err;
         }
       }
+    }
 
-      if (!(ctx->current_crl_score & CRL_SCORE_SCOPE)) {
-        ctx->error = X509_V_ERR_DIFFERENT_CRL_SCOPE;
-        ok = ctx->verify_cb(0, ctx);
-        if (!ok) {
-          goto err;
-        }
-      }
-
-      if (!(ctx->current_crl_score & CRL_SCORE_SAME_PATH)) {
-        if (check_crl_path(ctx, ctx->current_issuer) <= 0) {
-          ctx->error = X509_V_ERR_CRL_PATH_VALIDATION_ERROR;
-          ok = ctx->verify_cb(0, ctx);
-          if (!ok) {
-            goto err;
-          }
-        }
-      }
-
-      if (crl->idp_flags & IDP_INVALID) {
-        ctx->error = X509_V_ERR_INVALID_EXTENSION;
-        ok = ctx->verify_cb(0, ctx);
-        if (!ok) {
-          goto err;
-        }
+    if (crl->idp_flags & IDP_INVALID) {
+      ctx->error = X509_V_ERR_INVALID_EXTENSION;
+      ok = ctx->verify_cb(0, ctx);
+      if (!ok) {
+        goto err;
       }
     }
 
@@ -1472,12 +1432,8 @@ static int cert_crl(X509_STORE_CTX *ctx, X509_CRL *crl, X509 *x) {
       return 0;
     }
   }
-  // Look for serial number of certificate in CRL If found make sure reason
-  // is not removeFromCRL.
+  // Look for serial number of certificate in CRL.
   if (X509_CRL_get0_by_cert(crl, &rev, x)) {
-    if (rev->reason == CRL_REASON_REMOVE_FROM_CRL) {
-      return 2;
-    }
     ctx->error = X509_V_ERR_CERT_REVOKED;
     ok = ctx->verify_cb(0, ctx);
     if (!ok) {
