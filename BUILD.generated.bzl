@@ -712,7 +712,6 @@ pki_internal_headers = [
     "src/pki/crl.h",
     "src/pki/encode_values.h",
     "src/pki/extended_key_usage.h",
-    "src/pki/fillins/file_util.h",
     "src/pki/fillins/fillins_base64.h",
     "src/pki/fillins/log.h",
     "src/pki/fillins/openssl_util.h",
