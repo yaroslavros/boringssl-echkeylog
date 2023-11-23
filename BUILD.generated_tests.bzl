@@ -85,7 +85,6 @@ test_support_sources = [
     "src/pki/crl.h",
     "src/pki/encode_values.h",
     "src/pki/extended_key_usage.h",
-    "src/pki/fillins/fillins_base64.h",
     "src/pki/fillins/log.h",
     "src/pki/fillins/openssl_util.h",
     "src/pki/fillins/path_service.h",
