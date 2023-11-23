@@ -714,7 +714,6 @@ pki_internal_headers = [
     "src/pki/extended_key_usage.h",
     "src/pki/fillins/log.h",
     "src/pki/fillins/openssl_util.h",
-    "src/pki/fillins/path_service.h",
     "src/pki/general_names.h",
     "src/pki/input.h",
     "src/pki/ip_util.h",
