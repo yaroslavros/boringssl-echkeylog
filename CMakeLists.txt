@@ -14,7 +14,7 @@
 
 # This file is created by generate_build_files.py. Do not edit manually.
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 
 project(BoringSSL LANGUAGES C CXX)
 
@@ -202,6 +202,8 @@ set(
   src/crypto/curve25519/asm/x25519-asm-arm.S
   src/crypto/hrss/asm/poly_rq_mul.S
   src/crypto/poly1305/poly1305_arm_asm.S
+  src/third_party/fiat/asm/fiat_curve25519_adx_mul.S
+  src/third_party/fiat/asm/fiat_curve25519_adx_square.S
   win-aarch64/crypto/chacha/chacha-armv8-win.S
   win-aarch64/crypto/cipher_extra/chacha20_poly1305_armv8-win.S
   win-aarch64/crypto/fipsmodule/aesv8-armv8-win.S
@@ -299,6 +301,7 @@ add_library(
   src/crypto/bio/bio.c
   src/crypto/bio/bio_mem.c
   src/crypto/bio/connect.c
+  src/crypto/bio/errno.c
   src/crypto/bio/fd.c
   src/crypto/bio/file.c
   src/crypto/bio/hexdump.c
@@ -329,18 +332,17 @@ add_library(
   src/crypto/cipher_extra/tls_cbc.c
   src/crypto/conf/conf.c
   src/crypto/cpu_aarch64_apple.c
-  src/crypto/cpu_aarch64_freebsd.c
   src/crypto/cpu_aarch64_fuchsia.c
   src/crypto/cpu_aarch64_linux.c
   src/crypto/cpu_aarch64_openbsd.c
+  src/crypto/cpu_aarch64_sysreg.c
   src/crypto/cpu_aarch64_win.c
-  src/crypto/cpu_arm.c
   src/crypto/cpu_arm_freebsd.c
   src/crypto/cpu_arm_linux.c
-  src/crypto/cpu_arm_openbsd.c
   src/crypto/cpu_intel.c
   src/crypto/crypto.c
   src/crypto/curve25519/curve25519.c
+  src/crypto/curve25519/curve25519_64_adx.c
   src/crypto/curve25519/spake25519.c
   src/crypto/des/des.c
   src/crypto/dh_extra/dh_asn1.c
@@ -402,9 +404,11 @@ add_library(
   src/crypto/pool/pool.c
   src/crypto/rand_extra/deterministic.c
   src/crypto/rand_extra/forkunsafe.c
-  src/crypto/rand_extra/fuchsia.c
+  src/crypto/rand_extra/getentropy.c
+  src/crypto/rand_extra/ios.c
   src/crypto/rand_extra/passive.c
   src/crypto/rand_extra/rand_extra.c
+  src/crypto/rand_extra/trusty.c
   src/crypto/rand_extra/windows.c
   src/crypto/rc4/rc4.c
   src/crypto/refcount.c
