@@ -65,10 +65,8 @@
 #include <openssl/obj.h>
 #include <openssl/thread.h>
 #include <openssl/x509.h>
-#include <openssl/x509v3.h>
 
 #include "../internal.h"
-#include "../x509v3/internal.h"
 #include "internal.h"
 
 static CRYPTO_EX_DATA_CLASS g_ex_data_class =
