@@ -457,7 +457,8 @@
     "src/include/openssl/type_check.h", 
     "src/include/openssl/x509.h", 
     "src/include/openssl/x509_vfy.h", 
-    "src/include/openssl/x509v3.h"
+    "src/include/openssl/x509v3.h", 
+    "src/include/openssl/x509v3_errors.h"
   ], 
   "crypto_internal_headers": [
     "src/crypto/asn1/internal.h", 

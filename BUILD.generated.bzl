@@ -213,6 +213,7 @@ crypto_headers = [
     "src/include/openssl/x509.h",
     "src/include/openssl/x509_vfy.h",
     "src/include/openssl/x509v3.h",
+    "src/include/openssl/x509v3_errors.h",
 ]
 
 crypto_internal_headers = [
