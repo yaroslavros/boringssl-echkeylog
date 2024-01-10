@@ -277,7 +277,7 @@ OPENSSL_EXPORT uint32_t X509_get_extension_flags(X509 *x509);
 //
 // TODO(crbug.com/boringssl/381): Decoding an |X509| object will not check for
 // invalid extensions. To detect the error case, call
-// |X509_get_extensions_flags| and check the |EXFLAG_INVALID| bit.
+// |X509_get_extension_flags| and check the |EXFLAG_INVALID| bit.
 OPENSSL_EXPORT long X509_get_pathlen(X509 *x509);
 
 // X509v3_KU_* are key usage bits returned from |X509_get_key_usage|.
@@ -336,7 +336,7 @@ OPENSSL_EXPORT uint32_t X509_get_extended_key_usage(X509 *x509);
 //
 // TODO(crbug.com/boringssl/381): Decoding an |X509| object will not check for
 // invalid extensions. To detect the error case, call
-// |X509_get_extensions_flags| and check the |EXFLAG_INVALID| bit.
+// |X509_get_extension_flags| and check the |EXFLAG_INVALID| bit.
 OPENSSL_EXPORT const ASN1_OCTET_STRING *X509_get0_subject_key_id(X509 *x509);
 
 // X509_get0_authority_key_id returns keyIdentifier of |x509|'s authority key
@@ -347,7 +347,7 @@ OPENSSL_EXPORT const ASN1_OCTET_STRING *X509_get0_subject_key_id(X509 *x509);
 //
 // TODO(crbug.com/boringssl/381): Decoding an |X509| object will not check for
 // invalid extensions. To detect the error case, call
-// |X509_get_extensions_flags| and check the |EXFLAG_INVALID| bit.
+// |X509_get_extension_flags| and check the |EXFLAG_INVALID| bit.
 OPENSSL_EXPORT const ASN1_OCTET_STRING *X509_get0_authority_key_id(X509 *x509);
 
 DEFINE_STACK_OF(GENERAL_NAME)
@@ -361,7 +361,7 @@ typedef STACK_OF(GENERAL_NAME) GENERAL_NAMES;
 //
 // TODO(crbug.com/boringssl/381): Decoding an |X509| object will not check for
 // invalid extensions. To detect the error case, call
-// |X509_get_extensions_flags| and check the |EXFLAG_INVALID| bit.
+// |X509_get_extension_flags| and check the |EXFLAG_INVALID| bit.
 OPENSSL_EXPORT const GENERAL_NAMES *X509_get0_authority_issuer(X509 *x509);
 
 // X509_get0_authority_serial returns the authorityCertSerialNumber of |x509|'s
@@ -372,7 +372,7 @@ OPENSSL_EXPORT const GENERAL_NAMES *X509_get0_authority_issuer(X509 *x509);
 //
 // TODO(crbug.com/boringssl/381): Decoding an |X509| object will not check for
 // invalid extensions. To detect the error case, call
-// |X509_get_extensions_flags| and check the |EXFLAG_INVALID| bit.
+// |X509_get_extension_flags| and check the |EXFLAG_INVALID| bit.
 OPENSSL_EXPORT const ASN1_INTEGER *X509_get0_authority_serial(X509 *x509);
 
 // X509_get0_extensions returns |x509|'s extension list, or NULL if |x509| omits
@@ -1392,12 +1392,17 @@ OPENSSL_EXPORT X509_NAME *X509_NAME_dup(X509_NAME *name);
 // Although even the library itself passes this to a sorting function.
 OPENSSL_EXPORT int X509_NAME_cmp(const X509_NAME *a, const X509_NAME *b);
 
-// X509_NAME_get0_der sets |*out_der| and |*out_der_len|
+// X509_NAME_get0_der marshals |name| as a DER-encoded X.509 Name (RFC 5280). On
+// success, it returns one and sets |*out_der| and |*out_der_len| to a buffer
+// containing the result. Otherwise, it returns zero. |*out_der| is owned by
+// |name| and must not be freed by the caller. It is invalidated after |name| is
+// mutated or freed.
 //
 // Avoid this function and prefer |i2d_X509_NAME|. It is one of the reasons
-// these functions are not consistently thread-safe or const-correct. Depending
-// on the resolution of https://crbug.com/boringssl/407, this function may be
-// removed or cause poor performance.
+// |X509_NAME| functions, including this one, are not consistently thread-safe
+// or const-correct. Depending on the resolution of
+// https://crbug.com/boringssl/407, this function may be removed or cause poor
+// performance.
 OPENSSL_EXPORT int X509_NAME_get0_der(X509_NAME *name, const uint8_t **out_der,
                                       size_t *out_der_len);
 
@@ -3396,7 +3401,7 @@ OPENSSL_EXPORT int X509_NAME_get_text_by_NID(const X509_NAME *name, int nid,
 
 // X509_STORE_CTX_get0_parent_ctx returns NULL.
 OPENSSL_EXPORT X509_STORE_CTX *X509_STORE_CTX_get0_parent_ctx(
-    X509_STORE_CTX *ctx);
+    const X509_STORE_CTX *ctx);
 
 // X509_OBJECT_free_contents sets |obj| to the empty object, freeing any values
 // that were previously there.
@@ -3430,7 +3435,8 @@ OPENSSL_EXPORT int X509V3_add_standard_extensions(void);
 #define X509_STORE_get1_crls X509_STORE_CTX_get1_crls
 
 // X509_STORE_CTX_get_chain is a legacy alias for |X509_STORE_CTX_get0_chain|.
-OPENSSL_EXPORT STACK_OF(X509) *X509_STORE_CTX_get_chain(X509_STORE_CTX *ctx);
+OPENSSL_EXPORT STACK_OF(X509) *X509_STORE_CTX_get_chain(
+    const X509_STORE_CTX *ctx);
 
 // X509_STORE_CTX_trusted_stack is a deprecated alias for
 // |X509_STORE_CTX_set0_trusted_stack|.
@@ -3834,7 +3840,7 @@ OPENSSL_EXPORT STACK_OF(X509_CRL) *X509_STORE_CTX_get1_crls(X509_STORE_CTX *st,
                                                             X509_NAME *nm);
 
 // X509_STORE_set_flags enables all values in |flags| in |store|'s verification
-// flags.
+// flags. |flags| should be a combination of |X509_V_FLAG_*| constants.
 //
 // WARNING: These flags will be combined with default flags when copied to an
 // |X509_STORE_CTX|. This means it is impossible to unset those defaults from
@@ -3899,11 +3905,11 @@ OPENSSL_EXPORT void X509_STORE_CTX_set0_trusted_stack(X509_STORE_CTX *ctx,
                                                       STACK_OF(X509) *sk);
 
 // X509_STORE_CTX_get0_store returns the |X509_STORE| that |ctx| uses.
-OPENSSL_EXPORT X509_STORE *X509_STORE_CTX_get0_store(X509_STORE_CTX *ctx);
+OPENSSL_EXPORT X509_STORE *X509_STORE_CTX_get0_store(const X509_STORE_CTX *ctx);
 
 // X509_STORE_CTX_get0_cert returns the leaf certificate that |ctx| is
 // verifying.
-OPENSSL_EXPORT X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *ctx);
+OPENSSL_EXPORT X509 *X509_STORE_CTX_get0_cert(const X509_STORE_CTX *ctx);
 
 OPENSSL_EXPORT X509_LOOKUP *X509_STORE_add_lookup(X509_STORE *v,
                                                   const X509_LOOKUP_METHOD *m);
@@ -3940,7 +3946,7 @@ OPENSSL_EXPORT int X509_STORE_set_default_paths(X509_STORE *ctx);
 //
 // If called during the deprecated verification callback when |ok| is zero, it
 // returns the current error under consideration.
-OPENSSL_EXPORT int X509_STORE_CTX_get_error(X509_STORE_CTX *ctx);
+OPENSSL_EXPORT int X509_STORE_CTX_get_error(const X509_STORE_CTX *ctx);
 
 // X509_STORE_CTX_set_error sets |ctx|'s error to |err|, which should be
 // |X509_V_OK| or an |X509_V_ERR_*| constant. It is not expected to be called in
@@ -3953,10 +3959,11 @@ OPENSSL_EXPORT void X509_STORE_CTX_set_error(X509_STORE_CTX *ctx, int err);
 // by |X509_STORE_CTX_get_error| occured. This is zero-indexed integer into the
 // certificate chain. Zero indicates the target certificate, one its issuer, and
 // so on.
-OPENSSL_EXPORT int X509_STORE_CTX_get_error_depth(X509_STORE_CTX *ctx);
+OPENSSL_EXPORT int X509_STORE_CTX_get_error_depth(const X509_STORE_CTX *ctx);
 
-OPENSSL_EXPORT X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *ctx);
-OPENSSL_EXPORT X509_CRL *X509_STORE_CTX_get0_current_crl(X509_STORE_CTX *ctx);
+OPENSSL_EXPORT X509 *X509_STORE_CTX_get_current_cert(const X509_STORE_CTX *ctx);
+OPENSSL_EXPORT X509_CRL *X509_STORE_CTX_get0_current_crl(
+    const X509_STORE_CTX *ctx);
 
 // X509_STORE_CTX_get0_chain, after a successful |X509_verify_cert| call,
 // returns the verified certificate chain. The chain begins with the leaf and
@@ -3966,16 +3973,18 @@ OPENSSL_EXPORT X509_CRL *X509_STORE_CTX_get0_current_crl(X509_STORE_CTX *ctx);
 // verification callback, it returns the partial chain built so far. Callers
 // should avoid relying on this as this exposes unstable library implementation
 // details.
-OPENSSL_EXPORT STACK_OF(X509) *X509_STORE_CTX_get0_chain(X509_STORE_CTX *ctx);
+OPENSSL_EXPORT STACK_OF(X509) *X509_STORE_CTX_get0_chain(
+    const X509_STORE_CTX *ctx);
 
 // X509_STORE_CTX_get1_chain behaves like |X509_STORE_CTX_get0_chain| but
 // returns a newly-allocated |STACK_OF(X509)| containing the completed chain,
 // with each certificate's reference count incremented. Callers must free the
 // result with |sk_X509_pop_free| and |X509_free| when done.
-OPENSSL_EXPORT STACK_OF(X509) *X509_STORE_CTX_get1_chain(X509_STORE_CTX *ctx);
+OPENSSL_EXPORT STACK_OF(X509) *X509_STORE_CTX_get1_chain(
+    const X509_STORE_CTX *ctx);
 
 OPENSSL_EXPORT STACK_OF(X509) *X509_STORE_CTX_get0_untrusted(
-    X509_STORE_CTX *ctx);
+    const X509_STORE_CTX *ctx);
 OPENSSL_EXPORT void X509_STORE_CTX_set0_crls(X509_STORE_CTX *c,
                                              STACK_OF(X509_CRL) *sk);
 OPENSSL_EXPORT int X509_STORE_CTX_set_purpose(X509_STORE_CTX *ctx, int purpose);
@@ -3985,7 +3994,8 @@ OPENSSL_EXPORT int X509_STORE_CTX_purpose_inherit(X509_STORE_CTX *ctx,
                                                   int trust);
 
 // X509_STORE_CTX_set_flags enables all values in |flags| in |ctx|'s
-// verification flags.
+// verification flags. |flags| should be a combination of |X509_V_FLAG_*|
+// constants.
 OPENSSL_EXPORT void X509_STORE_CTX_set_flags(X509_STORE_CTX *ctx,
                                              unsigned long flags);
 
