@@ -195,6 +195,7 @@ crypto_headers = [
     "src/include/openssl/pkcs8.h",
     "src/include/openssl/poly1305.h",
     "src/include/openssl/pool.h",
+    "src/include/openssl/posix_time.h",
     "src/include/openssl/rand.h",
     "src/include/openssl/rc4.h",
     "src/include/openssl/ripemd.h",
