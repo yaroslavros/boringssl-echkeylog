@@ -564,7 +564,7 @@ add_executable(
 
 target_link_libraries(bssl ssl crypto)
 
-if(NOT ANDROID)
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
   find_package(Threads REQUIRED)
   target_link_libraries(crypto Threads::Threads)
 endif()
