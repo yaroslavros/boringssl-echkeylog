@@ -2061,6 +2061,8 @@
     "src/pki/testdata/path_builder_unittest/multi-root-D-by-D.pem", 
     "src/pki/testdata/path_builder_unittest/multi-root-E-by-E.pem", 
     "src/pki/testdata/path_builder_unittest/multi-root-F-by-E.pem", 
+    "src/pki/testdata/path_builder_unittest/precertificate/precertificate.pem", 
+    "src/pki/testdata/path_builder_unittest/precertificate/root.pem", 
     "src/pki/testdata/path_builder_unittest/self_issued_prioritization/generate-certs.py", 
     "src/pki/testdata/path_builder_unittest/self_issued_prioritization/keys/Root1.key", 
     "src/pki/testdata/path_builder_unittest/self_issued_prioritization/keys/Root2.key", 
