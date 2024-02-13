@@ -216,6 +216,7 @@ pki_test_sources = [
     "src/crypto/test/gtest_main.cc",
     "src/pki/cert_issuer_source_static_unittest.cc",
     "src/pki/certificate_policies_unittest.cc",
+    "src/pki/certificate_unittest.cc",
     "src/pki/crl_unittest.cc",
     "src/pki/encode_values_unittest.cc",
     "src/pki/extended_key_usage_unittest.cc",
