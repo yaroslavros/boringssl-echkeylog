@@ -99,7 +99,6 @@ test_support_sources = [
     "src/pki/pem.h",
     "src/pki/revocation_util.h",
     "src/pki/signature_algorithm.h",
-    "src/pki/signature_verify_cache.h",
     "src/pki/simple_path_builder_delegate.h",
     "src/pki/string_util.h",
     "src/pki/tag.h",
