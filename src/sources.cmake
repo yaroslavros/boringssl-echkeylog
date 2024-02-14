@@ -38,6 +38,7 @@ set(
   crypto/fipsmodule/cmac/cmac_test.cc
   crypto/fipsmodule/ec/ec_test.cc
   crypto/fipsmodule/ec/p256-nistz_test.cc
+  crypto/fipsmodule/ec/p256_test.cc
   crypto/fipsmodule/ecdsa/ecdsa_test.cc
   crypto/fipsmodule/hkdf/hkdf_test.cc
   crypto/fipsmodule/md5/md5_test.cc
@@ -50,6 +51,7 @@ set(
   crypto/hmac_extra/hmac_test.cc
   crypto/hrss/hrss_test.cc
   crypto/impl_dispatch_test.cc
+  crypto/keccak/keccak_test.cc
   crypto/kyber/kyber_test.cc
   crypto/lhash/lhash_test.cc
   crypto/obj/obj_test.cc
@@ -66,6 +68,7 @@ set(
   crypto/self_test.cc
   crypto/stack/stack_test.cc
   crypto/siphash/siphash_test.cc
+  crypto/spx/spx_test.cc
   crypto/thread_test.cc
   # TODO(crbug.com/boringssl/542): This should be in TEST_SUPPORT_SOURCES, so
   # that all tests can use it. But it depends on GetTestData, which is not
@@ -141,7 +144,7 @@ set(
   crypto/fipsmodule/rand/ctrdrbg_vectors.txt
   crypto/hmac_extra/hmac_tests.txt
   crypto/hpke/hpke_test_vectors.txt
-  crypto/kyber/keccak_tests.txt
+  crypto/keccak/keccak_tests.txt
   crypto/kyber/kyber_tests.txt
   crypto/pkcs8/test/empty_password.p12
   crypto/pkcs8/test/no_encryption.p12
@@ -154,6 +157,8 @@ set(
   crypto/pkcs8/test/windows.p12
   crypto/poly1305/poly1305_tests.txt
   crypto/siphash/siphash_tests.txt
+  crypto/spx/spx_tests.txt
+  crypto/spx/spx_tests_deterministic.txt
   crypto/x509/test/basic_constraints_ca.pem
   crypto/x509/test/basic_constraints_ca_pathlen_0.pem
   crypto/x509/test/basic_constraints_ca_pathlen_1.pem
@@ -408,6 +413,7 @@ set(
   pki/path_builder_pkits_unittest.cc
   pki/path_builder_unittest.cc
   pki/path_builder_verify_certificate_chain_unittest.cc
+  pki/pem_unittest.cc
   pki/signature_algorithm_unittest.cc
   pki/simple_path_builder_delegate_unittest.cc
   pki/string_util_unittest.cc
