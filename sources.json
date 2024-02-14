@@ -427,6 +427,7 @@
     "src/include/openssl/pkcs12.h", 
     "src/include/openssl/pkcs7.h", 
     "src/include/openssl/pkcs8.h", 
+    "src/include/openssl/pki/certificate.h", 
     "src/include/openssl/poly1305.h", 
     "src/include/openssl/pool.h", 
     "src/include/openssl/posix_time.h", 
@@ -983,6 +984,7 @@
     "src/pki/cert_error_params.cc", 
     "src/pki/cert_errors.cc", 
     "src/pki/cert_issuer_source_static.cc", 
+    "src/pki/certificate.cc", 
     "src/pki/certificate_policies.cc", 
     "src/pki/common_cert_errors.cc", 
     "src/pki/crl.cc", 
@@ -1060,6 +1062,7 @@
   "pki_test": [
     "src/crypto/test/gtest_main.cc", 
     "src/pki/cert_issuer_source_static_unittest.cc", 
+    "src/pki/certificate_unittest.cc", 
     "src/pki/certificate_policies_unittest.cc", 
     "src/pki/crl_unittest.cc", 
     "src/pki/encode_values_unittest.cc", 
