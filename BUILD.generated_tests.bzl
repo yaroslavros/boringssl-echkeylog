@@ -101,7 +101,6 @@ test_support_sources = [
     "src/pki/signature_algorithm.h",
     "src/pki/simple_path_builder_delegate.h",
     "src/pki/string_util.h",
-    "src/pki/tag.h",
     "src/pki/test_helpers.h",
     "src/pki/testdata/nist-pkits/pkits_testcases-inl.h",
     "src/pki/trust_store.h",
