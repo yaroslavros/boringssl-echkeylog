@@ -2907,7 +2907,9 @@
     "src/pki/testdata/verify_signed_data_unittest/rsa-pss-sha256-wrong-salt.pem", 
     "src/pki/testdata/verify_signed_data_unittest/rsa-pss-sha256.pem", 
     "src/pki/testdata/verify_signed_data_unittest/rsa-using-ec-key.pem", 
-    "src/pki/testdata/verify_signed_data_unittest/rsa2048-pkcs1-sha512.pem"
+    "src/pki/testdata/verify_signed_data_unittest/rsa2048-pkcs1-sha512.pem", 
+    "src/pki/testdata/verify_unittest/google-leaf.der", 
+    "src/pki/testdata/verify_unittest/self-issued.pem"
   ], 
   "rust_bssl_crypto": [
     "src/rust/bssl-crypto/src/aead.rs", 
