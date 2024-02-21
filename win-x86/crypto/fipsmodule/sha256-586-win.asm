@@ -41,26 +41,24 @@ L$000pic_point:
 	lea	edx,[_OPENSSL_ia32cap_P]
 	mov	ecx,DWORD [edx]
 	mov	ebx,DWORD [4+edx]
-	test	ecx,1048576
-	jnz	NEAR L$002loop
 	mov	edx,DWORD [8+edx]
 	test	ecx,16777216
-	jz	NEAR L$003no_xmm
+	jz	NEAR L$002no_xmm
 	and	ecx,1073741824
 	and	ebx,268435968
 	or	ecx,ebx
 	and	ecx,1342177280
 	cmp	ecx,1342177280
-	je	NEAR L$004AVX
+	je	NEAR L$003AVX
 	test	ebx,512
-	jnz	NEAR L$005SSSE3
-L$003no_xmm:
+	jnz	NEAR L$004SSSE3
+L$002no_xmm:
 	sub	eax,edi
 	cmp	eax,256
-	jae	NEAR L$006unrolled
-	jmp	NEAR L$002loop
+	jae	NEAR L$005unrolled
+	jmp	NEAR L$006loop
 align	16
-L$002loop:
+L$006loop:
 	mov	eax,DWORD [edi]
 	mov	ebx,DWORD [4+edi]
 	mov	ecx,DWORD [8+edi]
@@ -253,7 +251,7 @@ L$00816_63:
 	lea	esp,[356+esp]
 	sub	ebp,256
 	cmp	edi,DWORD [8+esp]
-	jb	NEAR L$002loop
+	jb	NEAR L$006loop
 	mov	esp,DWORD [12+esp]
 	pop	edi
 	pop	esi
@@ -270,7 +268,7 @@ db	67,82,89,80,84,79,71,65,77,83,32,98,121,32,60,97
 db	112,112,114,111,64,111,112,101,110,115,115,108,46,111,114,103
 db	62,0
 align	16
-L$006unrolled:
+L$005unrolled:
 	lea	esp,[esp-96]
 	mov	eax,DWORD [esi]
 	mov	ebp,DWORD [4+esi]
@@ -3177,7 +3175,7 @@ L$009grand_loop:
 	pop	ebp
 	ret
 align	32
-L$005SSSE3:
+L$004SSSE3:
 	lea	esp,[esp-96]
 	mov	eax,DWORD [esi]
 	mov	ebx,DWORD [4+esi]
@@ -4388,7 +4386,7 @@ db	102,15,58,15,249,4
 	pop	ebp
 	ret
 align	32
-L$004AVX:
+L$003AVX:
 	lea	esp,[esp-96]
 	vzeroall
 	mov	eax,DWORD [esi]

@@ -34,26 +34,24 @@ sha256_block_data_order:
 	leal	OPENSSL_ia32cap_P-.L001K256(%ebp),%edx
 	movl	(%edx),%ecx
 	movl	4(%edx),%ebx
-	testl	$1048576,%ecx
-	jnz	.L002loop
 	movl	8(%edx),%edx
 	testl	$16777216,%ecx
-	jz	.L003no_xmm
+	jz	.L002no_xmm
 	andl	$1073741824,%ecx
 	andl	$268435968,%ebx
 	orl	%ebx,%ecx
 	andl	$1342177280,%ecx
 	cmpl	$1342177280,%ecx
-	je	.L004AVX
+	je	.L003AVX
 	testl	$512,%ebx
-	jnz	.L005SSSE3
-.L003no_xmm:
+	jnz	.L004SSSE3
+.L002no_xmm:
 	subl	%edi,%eax
 	cmpl	$256,%eax
-	jae	.L006unrolled
-	jmp	.L002loop
+	jae	.L005unrolled
+	jmp	.L006loop
 .align	16
-.L002loop:
+.L006loop:
 	movl	(%edi),%eax
 	movl	4(%edi),%ebx
 	movl	8(%edi),%ecx
@@ -246,7 +244,7 @@ sha256_block_data_order:
 	leal	356(%esp),%esp
 	subl	$256,%ebp
 	cmpl	8(%esp),%edi
-	jb	.L002loop
+	jb	.L006loop
 	movl	12(%esp),%esp
 	popl	%edi
 	popl	%esi
@@ -263,7 +261,7 @@ sha256_block_data_order:
 .byte	112,112,114,111,64,111,112,101,110,115,115,108,46,111,114,103
 .byte	62,0
 .align	16
-.L006unrolled:
+.L005unrolled:
 	leal	-96(%esp),%esp
 	movl	(%esi),%eax
 	movl	4(%esi),%ebp
@@ -3170,7 +3168,7 @@ sha256_block_data_order:
 	popl	%ebp
 	ret
 .align	32
-.L005SSSE3:
+.L004SSSE3:
 	leal	-96(%esp),%esp
 	movl	(%esi),%eax
 	movl	4(%esi),%ebx
@@ -4381,7 +4379,7 @@ sha256_block_data_order:
 	popl	%ebp
 	ret
 .align	32
-.L004AVX:
+.L003AVX:
 	leal	-96(%esp),%esp
 	vzeroall
 	movl	(%esi),%eax
