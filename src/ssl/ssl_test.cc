@@ -3021,9 +3021,8 @@ TEST(SSLTest, WriteAfterWrongVersionOnEarlyData) {
   // The client processes the ServerHello and fails.
   EXPECT_EQ(-1, SSL_do_handshake(client.get()));
   EXPECT_EQ(SSL_ERROR_SSL, SSL_get_error(client.get(), -1));
-  uint32_t err = ERR_get_error();
-  EXPECT_EQ(ERR_LIB_SSL, ERR_GET_LIB(err));
-  EXPECT_EQ(SSL_R_WRONG_VERSION_ON_EARLY_DATA, ERR_GET_REASON(err));
+  EXPECT_TRUE(ErrorEquals(ERR_get_error(), ERR_LIB_SSL,
+                          SSL_R_WRONG_VERSION_ON_EARLY_DATA));
 
   // The client should have written an alert to the transport.
   const uint8_t *unused;
@@ -3035,9 +3034,8 @@ TEST(SSLTest, WriteAfterWrongVersionOnEarlyData) {
   // Writing should fail, with the same error as the handshake.
   EXPECT_EQ(-1, SSL_write(client.get(), "a", 1));
   EXPECT_EQ(SSL_ERROR_SSL, SSL_get_error(client.get(), -1));
-  err = ERR_get_error();
-  EXPECT_EQ(ERR_LIB_SSL, ERR_GET_LIB(err));
-  EXPECT_EQ(SSL_R_WRONG_VERSION_ON_EARLY_DATA, ERR_GET_REASON(err));
+  EXPECT_TRUE(ErrorEquals(ERR_get_error(), ERR_LIB_SSL,
+                          SSL_R_WRONG_VERSION_ON_EARLY_DATA));
 
   // Nothing should be written to the transport.
   ASSERT_TRUE(BIO_mem_contents(mem.get(), &unused, &len));
@@ -4556,6 +4554,82 @@ TEST(SSLTest, SetChainAndKeyMismatch) {
   ERR_clear_error();
 }
 
+TEST(SSLTest, CertThenKeyMismatch) {
+  bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_method()));
+  ASSERT_TRUE(ctx);
+
+  bssl::UniquePtr<EVP_PKEY> key = GetTestKey();
+  ASSERT_TRUE(key);
+  bssl::UniquePtr<X509> leaf = GetChainTestCertificate();
+  ASSERT_TRUE(leaf);
+
+  // There is no key or certificate, so |SSL_CTX_check_private_key| fails.
+  EXPECT_FALSE(SSL_CTX_check_private_key(ctx.get()));
+
+  // With only a certificate, |SSL_CTX_check_private_key| still fails.
+  ASSERT_TRUE(SSL_CTX_use_certificate(ctx.get(), leaf.get()));
+  EXPECT_FALSE(SSL_CTX_check_private_key(ctx.get()));
+
+  // The private key does not match the certificate, so it should fail.
+  EXPECT_FALSE(SSL_CTX_use_PrivateKey(ctx.get(), key.get()));
+
+  // Checking the private key fails, but this is really because there is still
+  // no private key.
+  EXPECT_FALSE(SSL_CTX_check_private_key(ctx.get()));
+  EXPECT_EQ(nullptr, SSL_CTX_get0_privatekey(ctx.get()));
+}
+
+TEST(SSLTest, KeyThenCertMismatch) {
+  bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_method()));
+  ASSERT_TRUE(ctx);
+
+  bssl::UniquePtr<EVP_PKEY> key = GetTestKey();
+  ASSERT_TRUE(key);
+  bssl::UniquePtr<X509> leaf = GetChainTestCertificate();
+  ASSERT_TRUE(leaf);
+
+  // There is no key or certificate, so |SSL_CTX_check_private_key| fails.
+  EXPECT_FALSE(SSL_CTX_check_private_key(ctx.get()));
+
+  // With only a key, |SSL_CTX_check_private_key| still fails.
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey(ctx.get(), key.get()));
+  EXPECT_FALSE(SSL_CTX_check_private_key(ctx.get()));
+
+  // If configuring a certificate that doesn't match the key, configuration
+  // actually succeeds. We just silently drop the private key.
+  ASSERT_TRUE(SSL_CTX_use_certificate(ctx.get(), leaf.get()));
+  EXPECT_EQ(nullptr, SSL_CTX_get0_privatekey(ctx.get()));
+
+  // Some callers configure the private key, then the certificate, and then
+  // expect |SSL_CTX_check_private_key| to check consistency. It does, but only
+  // by way of noticing there is no private key. The actual consistency check
+  // happened in |SSL_CTX_use_certificate|.
+  EXPECT_FALSE(SSL_CTX_check_private_key(ctx.get()));
+}
+
+TEST(SSLTest, OverrideCertAndKey) {
+  // It is possible to override an existing certificate by configuring
+  // certificate, then key, due to |SSL_CTX_use_certificate|'s above silent
+  // dropping behavior.
+  bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_method()));
+  ASSERT_TRUE(ctx);
+
+  bssl::UniquePtr<EVP_PKEY> key = GetTestKey();
+  ASSERT_TRUE(key);
+  bssl::UniquePtr<X509> leaf = GetTestCertificate();
+  ASSERT_TRUE(leaf);
+  bssl::UniquePtr<EVP_PKEY> key2 = GetChainTestKey();
+  ASSERT_TRUE(key2);
+  bssl::UniquePtr<X509> leaf2 = GetChainTestCertificate();
+  ASSERT_TRUE(leaf2);
+
+  ASSERT_TRUE(SSL_CTX_use_certificate(ctx.get(), leaf.get()));
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey(ctx.get(), key.get()));
+
+  ASSERT_TRUE(SSL_CTX_use_certificate(ctx.get(), leaf2.get()));
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey(ctx.get(), key2.get()));
+}
+
 TEST(SSLTest, SetChainAndKeyCtx) {
   bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_with_buffers_method()));
   ASSERT_TRUE(client_ctx);
@@ -5114,9 +5188,8 @@ TEST(SSLTest, NoCiphersAvailable) {
   int ret = SSL_do_handshake(ssl.get());
   EXPECT_EQ(-1, ret);
   EXPECT_EQ(SSL_ERROR_SSL, SSL_get_error(ssl.get(), ret));
-  uint32_t err = ERR_get_error();
-  EXPECT_EQ(ERR_LIB_SSL, ERR_GET_LIB(err));
-  EXPECT_EQ(SSL_R_NO_CIPHERS_AVAILABLE, ERR_GET_REASON(err));
+  EXPECT_TRUE(
+      ErrorEquals(ERR_get_error(), ERR_LIB_SSL, SSL_R_NO_CIPHERS_AVAILABLE));
 }
 
 TEST_P(SSLVersionTest, SessionVersion) {
@@ -7101,9 +7174,8 @@ TEST_F(QUICMethodTest, ExcessProvidedData) {
   // EncryptedExtensions on key change.
   ASSERT_EQ(SSL_do_handshake(client_.get()), -1);
   ASSERT_EQ(SSL_get_error(client_.get(), -1), SSL_ERROR_SSL);
-  uint32_t err = ERR_get_error();
-  EXPECT_EQ(ERR_GET_LIB(err), ERR_LIB_SSL);
-  EXPECT_EQ(ERR_GET_REASON(err), SSL_R_EXCESS_HANDSHAKE_DATA);
+  EXPECT_TRUE(
+      ErrorEquals(ERR_get_error(), ERR_LIB_SSL, SSL_R_EXCESS_HANDSHAKE_DATA));
 
   // The client sends an alert in response to this. The alert is sent at
   // handshake level because we install write secrets before read secrets and
@@ -7552,9 +7624,8 @@ TEST_P(SSLVersionTest, DoubleSSLError) {
       // The client handshake should terminate on a certificate verification
       // error.
       EXPECT_EQ(SSL_ERROR_SSL, client_err);
-      uint32_t err = ERR_peek_error();
-      EXPECT_EQ(ERR_LIB_SSL, ERR_GET_LIB(err));
-      EXPECT_EQ(SSL_R_CERTIFICATE_VERIFY_FAILED, ERR_GET_REASON(err));
+      EXPECT_TRUE(ErrorEquals(ERR_peek_error(), ERR_LIB_SSL,
+                              SSL_R_CERTIFICATE_VERIFY_FAILED));
       break;
     }
 
@@ -7830,9 +7901,8 @@ TEST(SSLTest, WriteWhileExplicitRenegotiate) {
   // We never renegotiate as a server.
   ASSERT_EQ(-1, SSL_read(server.get(), buf, sizeof(buf)));
   ASSERT_EQ(SSL_ERROR_SSL, SSL_get_error(server.get(), -1));
-  uint32_t err = ERR_get_error();
-  EXPECT_EQ(ERR_LIB_SSL, ERR_GET_LIB(err));
-  EXPECT_EQ(SSL_R_NO_RENEGOTIATION, ERR_GET_REASON(err));
+  EXPECT_TRUE(
+      ErrorEquals(ERR_get_error(), ERR_LIB_SSL, SSL_R_NO_RENEGOTIATION));
 }
 
 TEST(SSLTest, ConnectionPropertiesDuringRenegotiate) {
