@@ -1995,6 +1995,27 @@ func addBasicTests() {
 			},
 		},
 		{
+			name: "CheckClientCertificateTypes",
+			config: Config{
+				MaxVersion:             VersionTLS12,
+				ClientAuth:             RequestClientCert,
+				ClientCertificateTypes: []byte{CertTypeECDSASign},
+			},
+			shimCertificate: &rsaCertificate,
+			shouldFail:      true,
+			expectedError:   ":UNKNOWN_CERTIFICATE_TYPE:",
+		},
+		{
+			name: "NoCheckClientCertificateTypes",
+			config: Config{
+				MaxVersion:             VersionTLS12,
+				ClientAuth:             RequestClientCert,
+				ClientCertificateTypes: []byte{CertTypeECDSASign},
+			},
+			shimCertificate: &rsaCertificate,
+			flags:           []string{"-no-check-client-certificate-type"},
+		},
+		{
 			name: "UnauthenticatedECDH",
 			config: Config{
 				MaxVersion:   VersionTLS12,
@@ -18946,6 +18967,45 @@ func addHintMismatchTests() {
 				flags:                 []string{"-allow-hint-mismatch"},
 				expectations: connectionExpectations{
 					peerSignatureAlgorithm: signatureRSAPSSWithSHA256,
+				},
+			})
+		}
+
+		// The shim and handshaker may use different certificates. In TLS 1.3,
+		// the signature input includes the certificate, so we do not need to
+		// explicitly check for a public key match. In TLS 1.2, it does not.
+		ecdsaP256Certificate2 := generateSingleCertChain(nil, &channelIDKey)
+		testCases = append(testCases, testCase{
+			name:               protocol.String() + "-HintMismatch-Certificate-TLS13",
+			testType:           serverTest,
+			protocol:           protocol,
+			skipSplitHandshake: true,
+			config: Config{
+				MinVersion: VersionTLS13,
+				MaxVersion: VersionTLS13,
+			},
+			shimCertificate:       &ecdsaP256Certificate,
+			handshakerCertificate: &ecdsaP256Certificate2,
+			flags:                 []string{"-allow-hint-mismatch"},
+			expectations: connectionExpectations{
+				peerCertificate: &ecdsaP256Certificate,
+			},
+		})
+		if protocol != quic {
+			testCases = append(testCases, testCase{
+				name:               protocol.String() + "-HintMismatch-Certificate-TLS12",
+				testType:           serverTest,
+				protocol:           protocol,
+				skipSplitHandshake: true,
+				config: Config{
+					MinVersion: VersionTLS12,
+					MaxVersion: VersionTLS12,
+				},
+				shimCertificate:       &ecdsaP256Certificate,
+				handshakerCertificate: &ecdsaP256Certificate2,
+				flags:                 []string{"-allow-hint-mismatch"},
+				expectations: connectionExpectations{
+					peerCertificate: &ecdsaP256Certificate,
 				},
 			})
 		}
