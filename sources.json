@@ -2970,12 +2970,12 @@
     "src/ssl/ssl_versions.cc", 
     "src/ssl/ssl_x509.cc", 
     "src/ssl/t1_enc.cc", 
+    "src/ssl/tls_method.cc", 
+    "src/ssl/tls_record.cc", 
     "src/ssl/tls13_both.cc", 
     "src/ssl/tls13_client.cc", 
     "src/ssl/tls13_enc.cc", 
-    "src/ssl/tls13_server.cc", 
-    "src/ssl/tls_method.cc", 
-    "src/ssl/tls_record.cc"
+    "src/ssl/tls13_server.cc"
   ], 
   "ssl_headers": [
     "src/include/openssl/dtls1.h", 
