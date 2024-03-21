@@ -380,6 +380,8 @@ crypto_sources = [
     "src/crypto/evp/evp.c",
     "src/crypto/evp/evp_asn1.c",
     "src/crypto/evp/evp_ctx.c",
+    "src/crypto/evp/p_dh.c",
+    "src/crypto/evp/p_dh_asn1.c",
     "src/crypto/evp/p_dsa_asn1.c",
     "src/crypto/evp/p_ec.c",
     "src/crypto/evp/p_ec_asn1.c",
