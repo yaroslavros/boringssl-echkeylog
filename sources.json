@@ -1008,9 +1008,9 @@
     "src/pki/signature_algorithm.cc", 
     "src/pki/simple_path_builder_delegate.cc", 
     "src/pki/string_util.cc", 
+    "src/pki/trust_store.cc", 
     "src/pki/trust_store_collection.cc", 
     "src/pki/trust_store_in_memory.cc", 
-    "src/pki/trust_store.cc", 
     "src/pki/verify_certificate_chain.cc", 
     "src/pki/verify_error.cc", 
     "src/pki/verify_name_match.cc", 
@@ -1066,8 +1066,8 @@
   "pki_test": [
     "src/crypto/test/gtest_main.cc", 
     "src/pki/cert_issuer_source_static_unittest.cc", 
-    "src/pki/certificate_unittest.cc", 
     "src/pki/certificate_policies_unittest.cc", 
+    "src/pki/certificate_unittest.cc", 
     "src/pki/crl_unittest.cc", 
     "src/pki/encode_values_unittest.cc", 
     "src/pki/extended_key_usage_unittest.cc", 
@@ -2556,12 +2556,12 @@
     "src/ssl/ssl_versions.cc", 
     "src/ssl/ssl_x509.cc", 
     "src/ssl/t1_enc.cc", 
-    "src/ssl/tls_method.cc", 
-    "src/ssl/tls_record.cc", 
     "src/ssl/tls13_both.cc", 
     "src/ssl/tls13_client.cc", 
     "src/ssl/tls13_enc.cc", 
-    "src/ssl/tls13_server.cc"
+    "src/ssl/tls13_server.cc", 
+    "src/ssl/tls_method.cc", 
+    "src/ssl/tls_record.cc"
   ], 
   "ssl_headers": [
     "src/include/openssl/dtls1.h", 
