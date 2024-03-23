@@ -628,67 +628,49 @@ def main(platforms):
   with open(os.path.join('src', 'gen', 'sources.json')) as f:
     sources = json.load(f)
 
-  crypto_c_files = (FindCFiles(os.path.join('src', 'crypto'), NoTestsNorFIPSFragments) +
-                    FindCFiles(os.path.join('src', 'third_party', 'fiat'), NoTestsNorFIPSFragments))
   fips_fragments = FindCFiles(os.path.join('src', 'crypto', 'fipsmodule'), OnlyFIPSFragments)
-  tool_h_files = FindHeaderFiles(os.path.join('src', 'tool'), AllFiles)
   bssl_sys_files = FindRustFiles(os.path.join('src', 'rust', 'bssl-sys', 'src'))
   bssl_crypto_files = FindRustFiles(os.path.join('src', 'rust', 'bssl-crypto', 'src'))
 
-  # BCM shared library C files
-  bcm_crypto_c_files = [
-      os.path.join('src', 'crypto', 'fipsmodule', 'bcm.c')
-  ]
-
-  crypto_c_files += PrefixWithSrc(sources['crypto']['srcs'])
-  crypto_c_files.sort()
-
-  test_support_h_files = (
-      FindHeaderFiles(os.path.join('src', 'crypto', 'test'), AllFiles) +
-      FindHeaderFiles(os.path.join('src', 'ssl', 'test'), NoTestRunnerFiles))
-
   fuzz_c_files = FindCFiles(os.path.join('src', 'fuzz'), NoTests)
-
-  pki_internal_h_files = FindHeaderFiles(os.path.join('src', 'pki'), AllFiles)
-  ssl_internal_h_files = FindHeaderFiles(os.path.join('src', 'ssl'), NoTests)
-  crypto_internal_h_files = (
-      FindHeaderFiles(os.path.join('src', 'crypto'), NoTests) +
-      FindHeaderFiles(os.path.join('src', 'third_party', 'fiat'), NoTests))
 
   # TODO(crbug.com/boringssl/542): generate_build_files.py historically reported
   # all the assembly files as part of libcrypto. Merge them for now, but we
   # should split them out later.
+  crypto = sorted(sources['bcm']['srcs'] + sources['crypto']['srcs'])
   crypto_asm = sorted(sources['bcm']['asm'] + sources['crypto']['asm'] +
                       sources['test_support']['asm'])
   crypto_nasm = sorted(sources['bcm']['nasm'] + sources['crypto']['nasm'] +
                        sources['test_support']['nasm'])
 
   files = {
-      'bcm_crypto': bcm_crypto_c_files,
-      'crypto': crypto_c_files,
+      'bcm_crypto': PrefixWithSrc(sources['bcm']['srcs']),
+      'crypto': PrefixWithSrc(crypto),
       'crypto_asm': PrefixWithSrc(crypto_asm),
       'crypto_nasm': PrefixWithSrc(crypto_nasm),
       'crypto_headers': PrefixWithSrc(sources['crypto']['hdrs']),
-      'crypto_internal_headers': crypto_internal_h_files,
+      'crypto_internal_headers':
+          PrefixWithSrc(sources['crypto']['internal_hdrs']),
       'crypto_test': PrefixWithSrc(sources['crypto_test']['srcs']),
       'crypto_test_data': PrefixWithSrc(sources['crypto_test']['data']),
       'fips_fragments': fips_fragments,
       'fuzz': fuzz_c_files,
       'pki': PrefixWithSrc(sources['pki']['srcs']),
       'pki_headers': PrefixWithSrc(sources['pki']['hdrs']),
-      'pki_internal_headers': sorted(list(pki_internal_h_files)),
+      'pki_internal_headers': PrefixWithSrc(sources['pki']['internal_hdrs']),
       'pki_test': PrefixWithSrc(sources['pki_test']['srcs']),
       'pki_test_data': PrefixWithSrc(sources['pki_test']['data']),
       'rust_bssl_crypto': bssl_crypto_files,
       'rust_bssl_sys': bssl_sys_files,
       'ssl': PrefixWithSrc(sources['ssl']['srcs']),
       'ssl_headers': PrefixWithSrc(sources['ssl']['hdrs']),
-      'ssl_internal_headers': ssl_internal_h_files,
+      'ssl_internal_headers': PrefixWithSrc(sources['ssl']['internal_hdrs']),
       'ssl_test': PrefixWithSrc(sources['ssl_test']['srcs']),
       'tool': PrefixWithSrc(sources['bssl']['srcs']),
-      'tool_headers': tool_h_files,
+      'tool_headers': PrefixWithSrc(sources['bssl']['internal_hdrs']),
       'test_support': PrefixWithSrc(sources['test_support']['srcs']),
-      'test_support_headers': test_support_h_files,
+      'test_support_headers':
+          PrefixWithSrc(sources['test_support']['internal_hdrs']),
       'urandom_test': PrefixWithSrc(sources['urandom_test']['srcs']),
   }
 
