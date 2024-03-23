@@ -61,9 +61,12 @@ test_support_sources = [
     "src/crypto/test/abi_test.h",
     "src/crypto/test/file_test.cc",
     "src/crypto/test/file_test.h",
+    "src/crypto/test/file_test_gtest.cc",
     "src/crypto/test/file_util.cc",
     "src/crypto/test/file_util.h",
     "src/crypto/test/gtest_main.h",
+    "src/crypto/test/test_data.cc",
+    "src/crypto/test/test_data.h",
     "src/crypto/test/test_util.cc",
     "src/crypto/test/test_util.h",
     "src/crypto/test/wycheproof_util.cc",
@@ -131,7 +134,6 @@ test_support_sources = [
 ]
 
 crypto_test_sources = [
-    "crypto_test_data.cc",
     "src/crypto/abi_self_test.cc",
     "src/crypto/asn1/asn1_test.cc",
     "src/crypto/base64/base64_test.cc",
@@ -195,7 +197,6 @@ crypto_test_sources = [
     "src/crypto/siphash/siphash_test.cc",
     "src/crypto/spx/spx_test.cc",
     "src/crypto/stack/stack_test.cc",
-    "src/crypto/test/file_test_gtest.cc",
     "src/crypto/test/gtest_main.cc",
     "src/crypto/thread_test.cc",
     "src/crypto/trust_token/trust_token_test.cc",
