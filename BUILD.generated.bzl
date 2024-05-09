@@ -773,6 +773,7 @@ pki_sources = [
     "src/pki/trust_store.cc",
     "src/pki/trust_store_collection.cc",
     "src/pki/trust_store_in_memory.cc",
+    "src/pki/verify.cc",
     "src/pki/verify_certificate_chain.cc",
     "src/pki/verify_error.cc",
     "src/pki/verify_name_match.cc",

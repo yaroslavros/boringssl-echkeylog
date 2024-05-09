@@ -248,6 +248,7 @@ pki_test_sources = [
     "src/pki/verify_certificate_chain_unittest.cc",
     "src/pki/verify_name_match_unittest.cc",
     "src/pki/verify_signed_data_unittest.cc",
+    "src/pki/verify_unittest.cc",
 ]
 
 crypto_test_data = [
@@ -1900,7 +1901,15 @@ pki_test_data = [
     "src/pki/testdata/verify_signed_data_unittest/rsa-pss-sha256.pem",
     "src/pki/testdata/verify_signed_data_unittest/rsa-using-ec-key.pem",
     "src/pki/testdata/verify_signed_data_unittest/rsa2048-pkcs1-sha512.pem",
+    "src/pki/testdata/verify_unittest/google-intermediate1.der",
+    "src/pki/testdata/verify_unittest/google-intermediate2.der",
     "src/pki/testdata/verify_unittest/google-leaf.der",
+    "src/pki/testdata/verify_unittest/lencr-intermediate-r3.der",
+    "src/pki/testdata/verify_unittest/lencr-leaf.der",
+    "src/pki/testdata/verify_unittest/lencr-root-dst-x3.der",
+    "src/pki/testdata/verify_unittest/lencr-root-x1-cross-signed.der",
+    "src/pki/testdata/verify_unittest/lencr-root-x1.der",
+    "src/pki/testdata/verify_unittest/mozilla_roots.der",
     "src/pki/testdata/verify_unittest/self-issued.pem",
 ]
 
