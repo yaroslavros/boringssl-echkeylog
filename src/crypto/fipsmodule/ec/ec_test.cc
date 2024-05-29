@@ -30,9 +30,11 @@
 #include <openssl/obj.h>
 #include <openssl/span.h>
 
-#include "./internal.h"
-#include "../test/file_test.h"
-#include "../test/test_util.h"
+#include "../../ec_extra/internal.h"
+#include "../../test/file_test.h"
+#include "../../test/test_util.h"
+#include "../bn/internal.h"
+#include "internal.h"
 
 
 // kECKeyWithoutPublic is an ECPrivateKey with the optional publicKey field
@@ -1024,7 +1026,7 @@ TEST(ECTest, ScalarBaseMultVectors) {
   bssl::UniquePtr<BN_CTX> ctx(BN_CTX_new());
   ASSERT_TRUE(ctx);
 
-  FileTestGTest("crypto/ec_extra/ec_scalar_base_mult_tests.txt",
+  FileTestGTest("crypto/fipsmodule/ec/ec_scalar_base_mult_tests.txt",
                 [&](FileTest *t) {
     const EC_GROUP *group = GetCurve(t, "Curve");
     ASSERT_TRUE(group);
@@ -1070,7 +1072,7 @@ TEST(ECTest, DISABLED_ScalarBaseMultVectorsTwoPoint) {
   bssl::UniquePtr<BN_CTX> ctx(BN_CTX_new());
   ASSERT_TRUE(ctx);
 
-  FileTestGTest("crypto/ec_extra/ec_scalar_base_mult_tests.txt",
+  FileTestGTest("crypto/fipsmodule/ec/ec_scalar_base_mult_tests.txt",
                 [&](FileTest *t) {
     const EC_GROUP *group = GetCurve(t, "Curve");
     ASSERT_TRUE(group);

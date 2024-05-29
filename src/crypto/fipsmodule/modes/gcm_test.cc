@@ -55,15 +55,16 @@
 
 #include <openssl/aes.h>
 
-#include "../test/abi_test.h"
-#include "../test/file_test.h"
-#include "../test/test_util.h"
-#include "../fipsmodule/aes/internal.h"
-#include "../fipsmodule/modes/internal.h"
+#include "../../internal.h"
+#include "../../test/abi_test.h"
+#include "../../test/file_test.h"
+#include "../../test/test_util.h"
+#include "../aes/internal.h"
+#include "internal.h"
 
 
 TEST(GCMTest, TestVectors) {
-  FileTestGTest("crypto/cipher_extra/gcm_tests.txt", [](FileTest *t) {
+  FileTestGTest("crypto/fipsmodule/modes/gcm_tests.txt", [](FileTest *t) {
     std::vector<uint8_t> key, plaintext, additional_data, nonce, ciphertext,
         tag;
     ASSERT_TRUE(t->GetBytes(&key, "Key"));
