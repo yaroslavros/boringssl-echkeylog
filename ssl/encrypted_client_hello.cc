@@ -673,6 +673,13 @@ bool ssl_select_ech_config(SSL_HANDSHAKE *hs, Span<uint8_t> out_enc,
           return false;
         }
 
+        EVP_HPKE_CTX_set_shared_secret_cb(hs->ech_hpke_ctx.get(),
+                                          [](const uint8_t *shared_secret,
+                                          size_t shared_secret_len, void *ssl) {
+            ssl_log_secret((SSL *)ssl, "ECH_SECRET",
+                           MakeConstSpan(shared_secret, shared_secret_len));
+        }, hs->ssl);
+        
         if (!EVP_HPKE_CTX_setup_sender(
                 hs->ech_hpke_ctx.get(), out_enc.data(), out_enc_len,
                 out_enc.size(), kem, kdf, aead, ech_config.public_key.data(),
@@ -888,6 +895,11 @@ bool ssl_encrypt_client_hello(SSL_HANDSHAKE *hs, Span<const uint8_t> enc) {
                          CBB_len(aad.get())) ||
       payload_len != payload_span.size()) {
     return false;
+  }
+  if (!ssl->s3->used_hello_retry_request) {
+    ssl_log_secret(ssl, "ECH_CONFIG",
+                   MakeConstSpan(hs->selected_ech_config->raw.data(),
+                                 hs->selected_ech_config->raw.size()));
   }
 #endif // BORINGSSL_UNSAFE_FUZZER_MODE
 

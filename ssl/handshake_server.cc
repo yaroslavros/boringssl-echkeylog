@@ -165,6 +165,7 @@
 #include <openssl/mem.h>
 #include <openssl/nid.h>
 #include <openssl/rand.h>
+#include <openssl/sha.h>
 #include <openssl/x509.h>
 
 #include "internal.h"
@@ -172,6 +173,8 @@
 
 
 BSSL_NAMESPACE_BEGIN
+
+#define MAX_SHARED_SECRET_LEN SHA256_DIGEST_LENGTH
 
 bool ssl_client_cipher_list_contains_cipher(
     const SSL_CLIENT_HELLO *client_hello, uint16_t id) {
@@ -530,7 +533,7 @@ static bool is_probably_jdk11_with_tls13(const SSL_CLIENT_HELLO *client_hello) {
 
 static bool decrypt_ech(SSL_HANDSHAKE *hs, uint8_t *out_alert,
                         const SSL_CLIENT_HELLO *client_hello) {
-  SSL *const ssl = hs->ssl;
+  SSL *ssl = hs->ssl;
   CBS body;
   if (!ssl_client_hello_get_extension(client_hello, &body,
                                       TLSEXT_TYPE_encrypted_client_hello)) {
@@ -570,11 +573,27 @@ static bool decrypt_ech(SSL_HANDSHAKE *hs, uint8_t *out_alert,
     return true;
   }
 
+  struct shared_secret_lv_t {
+    size_t shared_secret_len;
+    uint8_t shared_secret[MAX_SHARED_SECRET_LEN];
+  } shared_secret_lv;
   for (const auto &config : hs->ech_keys->configs) {
     hs->ech_hpke_ctx.Reset();
-    if (config_id != config->ech_config().config_id ||
-        !config->SetupContext(hs->ech_hpke_ctx.get(), kdf_id, aead_id, enc)) {
+    if (config_id == config->ech_config().config_id) {
+      EVP_HPKE_CTX_set_shared_secret_cb(hs->ech_hpke_ctx.get(),
+                                        [](const uint8_t *shared_secret,
+                                        size_t shared_secret_len, void *arg) {
+        shared_secret_lv_t *shared_secret_lv = (shared_secret_lv_t*)arg;
+        shared_secret_lv->shared_secret_len = shared_secret_len;
+        OPENSSL_memcpy(shared_secret_lv->shared_secret, shared_secret,
+                       shared_secret_len);
+      }, &shared_secret_lv);
+      if (!config->SetupContext(hs->ech_hpke_ctx.get(), kdf_id, aead_id, enc)) {
       // Ignore the error and try another ECHConfig.
+        ERR_clear_error();
+        continue;
+      }
+    } else {
       ERR_clear_error();
       continue;
     }
@@ -594,6 +613,13 @@ static bool decrypt_ech(SSL_HANDSHAKE *hs, uint8_t *out_alert,
       OPENSSL_PUT_ERROR(SSL, SSL_R_DECRYPTION_FAILED);
       return false;
     }
+    OPENSSL_memcpy(ssl->s3->client_random, client_hello->random, SSL3_RANDOM_SIZE);
+    ssl_log_secret(ssl, "ECH_SECRET",
+                   MakeConstSpan(shared_secret_lv.shared_secret,
+                                 shared_secret_lv.shared_secret_len));
+    ssl_log_secret(ssl, "ECH_CONFIG",
+                   MakeConstSpan(config->ech_config().raw.data(),
+                                 config->ech_config().raw.size()));
     hs->ech_config_id = config_id;
     ssl->s3->ech_status = ssl_ech_accepted;
     return true;

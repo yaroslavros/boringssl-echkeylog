@@ -356,6 +356,15 @@ OPENSSL_EXPORT const EVP_HPKE_AEAD *EVP_HPKE_CTX_aead(const EVP_HPKE_CTX *ctx);
 // not been set up.
 OPENSSL_EXPORT const EVP_HPKE_KDF *EVP_HPKE_CTX_kdf(const EVP_HPKE_CTX *ctx);
 
+// EVP_HPKE_CTX_set_shared_secret_cb sets a callback function after completion
+// of HPKE key schedule process before KEM shared secret gets freed.
+OPENSSL_EXPORT void EVP_HPKE_CTX_set_shared_secret_cb(EVP_HPKE_CTX *ctx,
+                                                      void (*cb)
+                                                      (const uint8_t *shared_secret,
+                                                      size_t shared_secret_len,
+                                                      void *arg),
+                                                      void *arg);
+
 
 // Private structures.
 //
@@ -371,6 +380,10 @@ struct evp_hpke_ctx_st {
   uint8_t exporter_secret[EVP_MAX_MD_SIZE];
   uint64_t seq;
   int is_sender;
+  void (*shared_secret_cb)(const uint8_t *shared_secret,
+                           size_t shared_secret_len,
+                           void *arg);
+  void *shared_secret_cb_arg;
 };
 
 struct evp_hpke_key_st {
