@@ -535,11 +535,19 @@ static int hpke_key_schedule(EVP_HPKE_CTX *ctx, uint8_t mode,
   }
 
   return 1;
+
+  if (ctx->shared_secret_cb != NULL)
+    ctx->shared_secret_cb(shared_secret, shared_secret_len, ctx->shared_secret_cb_arg);
+
 }
 
 void EVP_HPKE_CTX_zero(EVP_HPKE_CTX *ctx) {
+  void* shared_secret_cb = ctx->shared_secret_cb;
+  void* shared_secret_cb_arg = ctx->shared_secret_cb_arg;
   OPENSSL_memset(ctx, 0, sizeof(EVP_HPKE_CTX));
   EVP_AEAD_CTX_zero(&ctx->aead_ctx);
+  ctx->shared_secret_cb = shared_secret_cb;
+  ctx->shared_secret_cb_arg = shared_secret_cb_arg;
 }
 
 void EVP_HPKE_CTX_cleanup(EVP_HPKE_CTX *ctx) {
@@ -789,4 +797,13 @@ const EVP_HPKE_AEAD *EVP_HPKE_CTX_aead(const EVP_HPKE_CTX *ctx) {
 
 const EVP_HPKE_KDF *EVP_HPKE_CTX_kdf(const EVP_HPKE_CTX *ctx) {
   return ctx->kdf;
+}
+
+void EVP_HPKE_CTX_set_shared_secret_cb(EVP_HPKE_CTX *ctx,
+                                       void (*cb)
+                                       (const uint8_t *shared_secret,
+                                       size_t shared_secret_len, void *arg),
+                                       void *arg) {
+  ctx->shared_secret_cb = cb;
+  ctx->shared_secret_cb_arg = arg;
 }

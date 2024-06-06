@@ -465,12 +465,6 @@ static enum ssl_hs_wait_t do_start_connect(SSL_HANDSHAKE *hs) {
     return ssl_hs_error;
   }
 
-  uint8_t ech_enc[EVP_HPKE_MAX_ENC_LENGTH];
-  size_t ech_enc_len;
-  if (!ssl_select_ech_config(hs, ech_enc, &ech_enc_len)) {
-    return ssl_hs_error;
-  }
-
   // Always advertise the ClientHello version from the original maximum version,
   // even on renegotiation. The static RSA key exchange uses this field, and
   // some servers fail when it changes across handshakes.
@@ -503,6 +497,13 @@ static enum ssl_hs_wait_t do_start_connect(SSL_HANDSHAKE *hs) {
   if (!RAND_bytes(ssl->s3->client_random, sizeof(ssl->s3->client_random))) {
     return ssl_hs_error;
   }
+
+  uint8_t ech_enc[EVP_HPKE_MAX_ENC_LENGTH];
+  size_t ech_enc_len;
+  if (!ssl_select_ech_config(hs, ech_enc, &ech_enc_len)) {
+    return ssl_hs_error;
+  }
+
   if (hs->selected_ech_config &&
       !RAND_bytes(hs->inner_client_random, sizeof(hs->inner_client_random))) {
     return ssl_hs_error;
