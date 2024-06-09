@@ -534,11 +534,9 @@ static int hpke_key_schedule(EVP_HPKE_CTX *ctx, uint8_t mode,
     return 0;
   }
 
-  return 1;
-
   if (ctx->shared_secret_cb != NULL)
     ctx->shared_secret_cb(shared_secret, shared_secret_len, ctx->shared_secret_cb_arg);
-
+  return 1;
 }
 
 void EVP_HPKE_CTX_zero(EVP_HPKE_CTX *ctx) {
